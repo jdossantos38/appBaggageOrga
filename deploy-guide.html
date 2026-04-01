@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déploiement Smartphone — Trip Packing List</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .lang-toggle { display: none !important; }
+            .section-fr, .section-en { display: block !important; }
+            .section-en { page-break-before: always; }
+            .step { break-inside: avoid; }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .lang-toggle {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0.75rem 0;
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 1.5rem;
+        }
+        .lang-toggle button {
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #2563eb;
+            background: #fff;
+            color: #2563eb;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 0.25rem;
+            transition: all 0.2s;
+        }
+        .lang-toggle button.active {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.4rem;
+            color: #1d4ed8;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.3rem;
+        }
+        p { margin-bottom: 0.7rem; }
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.7rem;
+        }
+        li { margin-bottom: 0.4rem; }
+        code {
+            background: #f1f5f9;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+        .step {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-right: 0.6rem;
+            flex-shrink: 0;
+        }
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+        .step p, .step ul, .step ol {
+            padding-left: 2.6rem;
+        }
+        .step ul, .step ol {
+            padding-left: 4rem;
+        }
+
+        .tip {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 0.8rem 0;
+            font-size: 0.95rem;
+        }
+
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 0.8rem 0;
+            font-size: 0.95rem;
+        }
+
+        .url-box {
+            background: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: monospace;
+            font-size: 1rem;
+            text-align: center;
+            margin: 0.8rem 0;
+            word-break: break-all;
+        }
+
+        .method-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            margin: 0.8rem 0;
+        }
+        .method-card h4 {
+            color: #166534;
+            margin-bottom: 0.4rem;
+        }
+
+        .screenshot-placeholder {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            color: #94a3b8;
+            margin: 0.5rem 0;
+            font-style: italic;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="lang-toggle">
+    <button id="btnFR" class="active" onclick="showLang('fr')">🇫🇷 Français</button>
+    <button id="btnEN" onclick="showLang('en')">🇬🇧 English</button>
+    <button onclick="window.print()" style="margin-left:1rem; background:#f1f5f9; border-color:#94a3b8; color:#475569;">🖨️ PDF / Print</button>
+</div>
+
+<!-- ═══════════════════════════════════════ FRENCH ═══════════════════════════════════════ -->
+<div class="section-fr" id="sectionFR">
+
+<h1>📱 Déployer l'application sur smartphone</h1>
+<p class="subtitle">Installer Liste de Bagages sur iPhone ou Android via GitHub Pages</p>
+
+<h2>🌍 Principe</h2>
+<p>
+    L'application est hébergée gratuitement sur <strong>GitHub Pages</strong>. C'est un service de GitHub qui
+    publie automatiquement vos fichiers comme un site web. Comme l'app est une <strong>PWA</strong> (Progressive Web App),
+    elle peut ensuite être installée sur l'écran d'accueil de n'importe quel smartphone et fonctionner <strong>hors-ligne</strong>.
+</p>
+
+<h2>Partie A — Activer GitHub Pages</h2>
+
+<!-- STEP 1 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Se connecter à GitHub</div>
+    <p>Allez sur <code>https://github.com</code> et connectez-vous à votre compte.</p>
+</div>
+
+<!-- STEP 2 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Ouvrir le dépôt</div>
+    <p>Naviguez vers votre dépôt :</p>
+    <div class="url-box">https://github.com/jdossantos38/appBaggageOrga</div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Accéder aux paramètres Pages</div>
+    <ol>
+        <li>Cliquez sur l'onglet <strong>⚙️ Settings</strong> (en haut du dépôt)</li>
+        <li>Dans le menu latéral gauche, cliquez sur <strong>Pages</strong> (sous la section "Code and automation")</li>
+    </ol>
+</div>
+
+<!-- STEP 4 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Configurer la source</div>
+    <p>Dans la section <strong>"Build and deployment"</strong> :</p>
+    <ol>
+        <li><strong>Source</strong> : sélectionnez <code>Deploy from a branch</code></li>
+        <li><strong>Branch</strong> : sélectionnez <code>main</code></li>
+        <li><strong>Folder</strong> : laissez <code>/ (root)</code></li>
+        <li>Cliquez sur <strong>Save</strong></li>
+    </ol>
+    <div class="tip">💡 Le déploiement prend généralement 1 à 3 minutes. Vous pouvez suivre l'avancement dans l'onglet <strong>Actions</strong> du dépôt.</div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Récupérer l'adresse du site</div>
+    <p>Une fois le déploiement terminé, GitHub affiche l'URL de votre site dans la page Settings → Pages :</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>C'est cette adresse que vous utiliserez sur votre smartphone.</p>
+    <div class="tip">💡 Si l'URL n'apparaît pas immédiatement, patientez quelques minutes et rafraîchissez la page.</div>
+</div>
+
+<h2>Partie B — Installer sur iPhone (iOS / Safari)</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Ouvrir Safari</div>
+    <p>Sur votre iPhone ou iPad, ouvrez <strong>Safari</strong> (le navigateur d'Apple). L'installation PWA ne fonctionne qu'avec Safari sur iOS.</p>
+    <div class="warning">⚠️ Chrome ou Firefox sur iPhone ne permettent pas d'installer des PWA. Utilisez obligatoirement <strong>Safari</strong>.</div>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Accéder à l'application</div>
+    <p>Tapez l'adresse dans la barre d'URL :</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>Attendez que la page se charge complètement.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Ouvrir le menu Partager</div>
+    <p>Appuyez sur le bouton <strong>Partager</strong> (icône carrée avec une flèche vers le haut ↑) situé en bas de l'écran Safari.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Ajouter à l'écran d'accueil</div>
+    <ol>
+        <li>Faites défiler les options et appuyez sur <strong>« Sur l'écran d'accueil »</strong></li>
+        <li>Vous pouvez modifier le nom si besoin (par défaut : « Bagages »)</li>
+        <li>Appuyez sur <strong>Ajouter</strong></li>
+    </ol>
+    <p>✅ L'icône de l'application apparaît maintenant sur votre écran d'accueil, comme une vraie app !</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Utiliser l'application</div>
+    <p>Ouvrez l'app depuis l'écran d'accueil. Elle s'ouvre en <strong>plein écran</strong> (sans barre Safari) et fonctionne <strong>même sans connexion internet</strong> grâce au Service Worker.</p>
+</div>
+
+<h2>Partie C — Installer sur Android (Chrome)</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Ouvrir Chrome</div>
+    <p>Sur votre téléphone Android, ouvrez <strong>Google Chrome</strong>.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Accéder à l'application</div>
+    <p>Tapez l'adresse dans la barre d'URL :</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>Attendez que la page se charge complètement.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Installer l'application</div>
+    <div class="method-card">
+        <h4>Méthode 1 — Bannière automatique</h4>
+        <p>Chrome affiche souvent une bannière en bas de l'écran : <strong>« Installer l'application »</strong>. Appuyez dessus.</p>
+    </div>
+    <div class="method-card">
+        <h4>Méthode 2 — Menu Chrome</h4>
+        <ol>
+            <li>Appuyez sur le menu <strong>⋮</strong> (3 points verticaux, en haut à droite)</li>
+            <li>Appuyez sur <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong></li>
+            <li>Confirmez en appuyant sur <strong>Installer</strong></li>
+        </ol>
+    </div>
+    <p>✅ L'application apparaît dans votre tiroir d'applications et sur l'écran d'accueil.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Utiliser l'application</div>
+    <p>Lancez l'app depuis l'écran d'accueil. Elle fonctionne en plein écran et <strong>hors-ligne</strong>.</p>
+</div>
+
+<h2>Partie D — Mettre à jour l'application</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Mettre à jour le code</div>
+    <p>Depuis votre PC, après avoir modifié les fichiers :</p>
+    <ol>
+        <li>Ouvrez un terminal dans le dossier du projet</li>
+        <li>Exécutez :
+            <br><code>git add -A</code>
+            <br><code>git commit -m "Description de la modification"</code>
+            <br><code>git push</code>
+        </li>
+    </ol>
+    <p>GitHub Pages redéploie automatiquement en 1-3 minutes.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Mettre à jour sur le smartphone</div>
+    <p>Le Service Worker gère les mises à jour. Il suffit de :</p>
+    <ol>
+        <li><strong>Ouvrir l'application</strong> sur votre smartphone (avec une connexion internet)</li>
+        <li>Le nouveau contenu se charge en arrière-plan</li>
+        <li><strong>Fermer et ré-ouvrir</strong> l'application pour voir les changements</li>
+    </ol>
+    <div class="tip">💡 Si la mise à jour ne s'affiche pas, forcez un rafraîchissement en fermant complètement l'app puis en la ré-ouvrant. Sur iOS, balayez vers le haut depuis le sélecteur d'apps pour la fermer.</div>
+</div>
+
+<h2>🔧 Dépannage</h2>
+
+<div class="step">
+    <div class="step-title">L'option « Sur l'écran d'accueil » n'apparaît pas (iOS)</div>
+    <ul>
+        <li>Vérifiez que vous utilisez <strong>Safari</strong> (pas Chrome ni Firefox)</li>
+        <li>Vérifiez que l'URL est HTTPS (GitHub Pages le fournit automatiquement)</li>
+        <li>Essayez de recharger la page et réessayez</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">L'option « Installer » n'apparaît pas (Android)</div>
+    <ul>
+        <li>Vérifiez que vous utilisez <strong>Chrome</strong></li>
+        <li>Vérifiez que l'URL est HTTPS</li>
+        <li>Essayez via le menu ⋮ → « Ajouter à l'écran d'accueil »</li>
+        <li>Attendez quelques secondes sur la page — la bannière peut mettre du temps à apparaître</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">La page affiche une erreur 404</div>
+    <ul>
+        <li>Vérifiez que GitHub Pages est activé dans Settings → Pages</li>
+        <li>Vérifiez que la branche est bien <code>main</code> et le dossier <code>/ (root)</code></li>
+        <li>Attendez 2-3 minutes après l'activation — le déploiement prend du temps</li>
+        <li>Consultez l'onglet <strong>Actions</strong> du dépôt pour voir si le build a réussi</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">L'app ne se met pas à jour</div>
+    <ul>
+        <li>Vérifiez que le numéro de cache dans <code>sw.js</code> a été incrémenté (ex: <code>bagages-v5</code> → <code>bagages-v6</code>)</li>
+        <li>Ouvrez l'app avec une connexion internet, fermez-la complètement, puis ré-ouvrez</li>
+        <li>En dernier recours : supprimez l'app de l'écran d'accueil et réinstallez-la</li>
+    </ul>
+</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ ENGLISH ═══════════════════════════════════════ -->
+<div class="section-en hidden" id="sectionEN">
+
+<h1>📱 Deploy the App on Smartphone</h1>
+<p class="subtitle">Install Trip Packing List on iPhone or Android via GitHub Pages</p>
+
+<h2>🌍 Overview</h2>
+<p>
+    The app is hosted for free on <strong>GitHub Pages</strong>, a GitHub service that automatically
+    publishes your files as a website. Since the app is a <strong>PWA</strong> (Progressive Web App),
+    it can be installed on any smartphone's home screen and works <strong>offline</strong>.
+</p>
+
+<h2>Part A — Enable GitHub Pages</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Log in to GitHub</div>
+    <p>Go to <code>https://github.com</code> and sign in to your account.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Open the Repository</div>
+    <p>Navigate to your repository:</p>
+    <div class="url-box">https://github.com/jdossantos38/appBaggageOrga</div>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Open Pages Settings</div>
+    <ol>
+        <li>Click the <strong>⚙️ Settings</strong> tab (at the top of the repo)</li>
+        <li>In the left sidebar, click <strong>Pages</strong> (under "Code and automation")</li>
+    </ol>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Configure the Source</div>
+    <p>In the <strong>"Build and deployment"</strong> section:</p>
+    <ol>
+        <li><strong>Source</strong>: select <code>Deploy from a branch</code></li>
+        <li><strong>Branch</strong>: select <code>main</code></li>
+        <li><strong>Folder</strong>: keep <code>/ (root)</code></li>
+        <li>Click <strong>Save</strong></li>
+    </ol>
+    <div class="tip">💡 Deployment usually takes 1-3 minutes. You can track progress in the repo's <strong>Actions</strong> tab.</div>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Get the Site URL</div>
+    <p>Once deployed, GitHub shows your site URL on the Settings → Pages page:</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>This is the address you'll use on your smartphone.</p>
+    <div class="tip">💡 If the URL doesn't appear right away, wait a few minutes and refresh the page.</div>
+</div>
+
+<h2>Part B — Install on iPhone (iOS / Safari)</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Open Safari</div>
+    <p>On your iPhone or iPad, open <strong>Safari</strong> (Apple's browser). PWA installation only works with Safari on iOS.</p>
+    <div class="warning">⚠️ Chrome or Firefox on iPhone cannot install PWAs. You <strong>must</strong> use Safari.</div>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Navigate to the App</div>
+    <p>Type the address in the URL bar:</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>Wait for the page to fully load.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Open the Share Menu</div>
+    <p>Tap the <strong>Share</strong> button (square icon with an upward arrow ↑) at the bottom of the Safari screen.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Add to Home Screen</div>
+    <ol>
+        <li>Scroll through the options and tap <strong>"Add to Home Screen"</strong></li>
+        <li>You can edit the name if needed (default: "Bagages")</li>
+        <li>Tap <strong>Add</strong></li>
+    </ol>
+    <p>✅ The app icon now appears on your home screen, just like a native app!</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Use the App</div>
+    <p>Open the app from your home screen. It opens in <strong>full screen</strong> (no Safari bar) and works <strong>even without internet</strong> thanks to the Service Worker.</p>
+</div>
+
+<h2>Part C — Install on Android (Chrome)</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Open Chrome</div>
+    <p>On your Android phone, open <strong>Google Chrome</strong>.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Navigate to the App</div>
+    <p>Type the address in the URL bar:</p>
+    <div class="url-box">https://jdossantos38.github.io/appBaggageOrga/</div>
+    <p>Wait for the page to fully load.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Install the App</div>
+    <div class="method-card">
+        <h4>Method 1 — Automatic Banner</h4>
+        <p>Chrome often shows a banner at the bottom: <strong>"Install app"</strong>. Tap it.</p>
+    </div>
+    <div class="method-card">
+        <h4>Method 2 — Chrome Menu</h4>
+        <ol>
+            <li>Tap the <strong>⋮</strong> menu (3 vertical dots, top right)</li>
+            <li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></li>
+            <li>Confirm by tapping <strong>Install</strong></li>
+        </ol>
+    </div>
+    <p>✅ The app appears in your app drawer and on your home screen.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Use the App</div>
+    <p>Launch the app from your home screen. It runs full-screen and works <strong>offline</strong>.</p>
+</div>
+
+<h2>Part D — Update the App</h2>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Push Code Changes</div>
+    <p>From your PC, after editing files:</p>
+    <ol>
+        <li>Open a terminal in the project folder</li>
+        <li>Run:
+            <br><code>git add -A</code>
+            <br><code>git commit -m "Description of change"</code>
+            <br><code>git push</code>
+        </li>
+    </ol>
+    <p>GitHub Pages redeploys automatically in 1-3 minutes.</p>
+</div>
+
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Update on Smartphone</div>
+    <p>The Service Worker handles updates. Simply:</p>
+    <ol>
+        <li><strong>Open the app</strong> on your smartphone (with internet connection)</li>
+        <li>New content loads in the background</li>
+        <li><strong>Close and reopen</strong> the app to see changes</li>
+    </ol>
+    <div class="tip">💡 If the update doesn't show, force-close the app and reopen it. On iOS, swipe up from the app switcher to fully close it.</div>
+</div>
+
+<h2>🔧 Troubleshooting</h2>
+
+<div class="step">
+    <div class="step-title">"Add to Home Screen" doesn't appear (iOS)</div>
+    <ul>
+        <li>Make sure you're using <strong>Safari</strong> (not Chrome or Firefox)</li>
+        <li>Make sure the URL is HTTPS (GitHub Pages provides this automatically)</li>
+        <li>Try reloading the page and try again</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">"Install" doesn't appear (Android)</div>
+    <ul>
+        <li>Make sure you're using <strong>Chrome</strong></li>
+        <li>Make sure the URL is HTTPS</li>
+        <li>Try the ⋮ menu → "Add to Home screen"</li>
+        <li>Wait a few seconds on the page — the banner may take time to appear</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">Page shows 404 error</div>
+    <ul>
+        <li>Make sure GitHub Pages is enabled in Settings → Pages</li>
+        <li>Make sure the branch is <code>main</code> and folder is <code>/ (root)</code></li>
+        <li>Wait 2-3 minutes after enabling — deployment takes time</li>
+        <li>Check the <strong>Actions</strong> tab in the repo to see if the build succeeded</li>
+    </ul>
+</div>
+
+<div class="step">
+    <div class="step-title">App doesn't update</div>
+    <ul>
+        <li>Make sure the cache number in <code>sw.js</code> was incremented (e.g. <code>bagages-v5</code> → <code>bagages-v6</code>)</li>
+        <li>Open the app with internet, fully close it, then reopen</li>
+        <li>Last resort: remove the app from home screen and reinstall it</li>
+    </ul>
+</div>
+
+</div>
+
+<script>
+function showLang(lang) {
+    document.getElementById('sectionFR').classList.toggle('hidden', lang !== 'fr');
+    document.getElementById('sectionEN').classList.toggle('hidden', lang !== 'en');
+    document.getElementById('btnFR').classList.toggle('active', lang === 'fr');
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+}
+</script>
+</body>
+</html>
