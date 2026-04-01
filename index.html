@@ -998,6 +998,22 @@
             font-style: italic;
         }
 
+        .config-apply-all {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+        .config-apply-all input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
         /* ── Help bubble ── */
         .help-fab {
             position: fixed;
@@ -1269,6 +1285,10 @@
             <div id="configBar" class="config-bar">
                 <button class="btn btn-sm-success btn" onclick="saveListConfig()" id="btnSaveConfig">💾</button>
                 <button class="btn btn-sm-secondary btn" onclick="resetListConfig()" id="btnResetConfig">↺</button>
+                <label class="config-apply-all">
+                    <input type="checkbox" id="applyAllCheck" checked>
+                    <span id="applyAllLabel">Appliquer à toutes les configurations</span>
+                </label>
                 <span class="config-info" id="configInfo"></span>
             </div>
 
@@ -1603,8 +1623,11 @@ const EN = {
     "Sauvegarder la configuration": "Save configuration",
     "Réinitialiser la configuration": "Reset configuration",
     "Configuration sauvegardée ✓": "Configuration saved ✓",
+    "Configuration sauvegardée pour toutes les configurations ✓": "Configuration saved for all setups ✓",
+    "Configuration sauvegardée pour ce voyage uniquement ✓": "Configuration saved for this trip only ✓",
+    "Appliquer à toutes les configurations": "Apply to all setups",
     "Configuration réinitialisée": "Configuration reset",
-    "Vos modifications (suppressions et quantités) seront mémorisées": "Your changes (deletions and quantities) will be remembered",
+    "Vos modifications (suppressions, quantités et ajouts) seront mémorisées": "Your changes (deletions, quantities and additions) will be remembered",
 };
 
 function t(text) {
@@ -1804,7 +1827,8 @@ function applyLanguage() {
     // Config bar
     document.getElementById('btnSaveConfig').textContent = '💾 ' + t('Sauvegarder la configuration');
     document.getElementById('btnResetConfig').textContent = '↺ ' + t('Réinitialiser la configuration');
-    document.getElementById('configInfo').textContent = t('Vos modifications (suppressions et quantités) seront mémorisées');
+    document.getElementById('applyAllLabel').textContent = t('Appliquer à toutes les configurations');
+    document.getElementById('configInfo').textContent = t('Vos modifications (suppressions, quantités et ajouts) seront mémorisées');
 
     // Rebuild participant fields to update labels
     buildParticipantFields();
@@ -2202,6 +2226,8 @@ function buildCategoryHtml(catKey, cat, items, idPrefix) {
 
     const catDiv = document.createElement('div');
     catDiv.className = `category ${cat.cssClass}`;
+    catDiv.dataset.catKey = catKey;
+    catDiv.dataset.section = idPrefix;
 
     const header = document.createElement('div');
     header.className = 'category-header';
@@ -2274,11 +2300,99 @@ function buildCategoryHtml(catKey, cat, items, idPrefix) {
     return catDiv;
 }
 
+function buildCategoryShell(catKey, cat, idPrefix) {
+    const catDiv = document.createElement('div');
+    catDiv.className = `category ${cat.cssClass}`;
+    catDiv.dataset.catKey = catKey;
+    catDiv.dataset.section = idPrefix;
+
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+        <span class="toggle-icon">▼</span>
+        ${t(cat.label)}
+        <span class="badge">0 items</span>
+    `;
+    header.onclick = function() {
+        const list = this.nextElementSibling;
+        const icon = this.querySelector('.toggle-icon');
+        if (list.style.display === 'none') { list.style.display = ''; icon.textContent = '▼'; }
+        else { list.style.display = 'none'; icon.textContent = '▶'; }
+    };
+    catDiv.appendChild(header);
+
+    const ul = document.createElement('ul');
+    ul.className = 'item-list';
+    catDiv.appendChild(ul);
+
+    const addRow = document.createElement('div');
+    addRow.className = 'add-item-row';
+    const addInputId = `addInput_${idPrefix}_${catKey}`;
+    const addQtyId = `addQty_${idPrefix}_${catKey}`;
+    addRow.innerHTML = `
+        <input type="text" id="${addInputId}" placeholder="${t('Ajouter un objet…')}">
+        <input type="number" id="${addQtyId}" min="1" max="99" value="1" title="${currentLang === 'en' ? 'Quantity' : 'Quantité'}">
+        <button class="btn-add-item" onclick="addCustomItem('${addInputId}', '${addQtyId}', this)">+ ${t('Ajouter')}</button>
+    `;
+    catDiv.appendChild(addRow);
+    return catDiv;
+}
+
+function appendSavedCustomItems(catEl, savedCustom, catKey, scope) {
+    const matching = savedCustom.filter(ci => ci.catKey === catKey && ci.scope === scope);
+    if (matching.length === 0) return;
+
+    const ul = catEl.querySelector('.item-list');
+    if (!ul) return;
+
+    matching.forEach(ci => {
+        customItemCounter++;
+        const itemId = `custom_item_${customItemCounter}`;
+        const li = document.createElement('li');
+        li.className = 'item-row';
+        li.dataset.weight = 0;
+        li.dataset.custom = 'true';
+        li.draggable = true;
+        li.innerHTML = `
+            <span class="drag-handle" title="Drag">⠿</span>
+            <input type="checkbox" id="${itemId}" onchange="toggleItem(this)">
+            <span class="item-name" id="${itemId}_name">${escapeHtml(ci.name)}</span>
+            <span class="item-weight">0 g</span>
+            <span class="qty-group">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <span class="item-qty" data-qty="${ci.qty}">${ci.qty}</span>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+            </span>
+            <button class="btn-remove-item" onclick="removeListItem(this)" title="${t('Supprimer')}">×</button>
+        `;
+        li.addEventListener('dragstart', handleDragStart);
+        li.addEventListener('dragover', handleDragOver);
+        li.addEventListener('dragenter', handleDragEnter);
+        li.addEventListener('dragleave', handleDragLeave);
+        li.addEventListener('drop', handleDrop);
+        li.addEventListener('dragend', handleDragEnd);
+        ul.appendChild(li);
+    });
+
+    // Update badge count
+    const badge = catEl.querySelector('.category-header .badge');
+    if (badge) {
+        const count = ul.querySelectorAll('.item-row').length;
+        badge.textContent = count + ' items';
+    }
+}
+
 // ─────────────────────────────────────────────
 //  GENERATE LIST
 // ─────────────────────────────────────────────
 
 function generateList() {
+    // Clear trip-only config when re-generating (so it doesn't persist across different trips)
+    if (localStorage.getItem('packinglist_listconfig_triponly') === 'true') {
+        localStorage.removeItem(LIST_CONFIG_KEY);
+        localStorage.removeItem('packinglist_listconfig_triponly');
+    }
+
     const cond = getConditions();
     window._lastCond = cond;
     const container = document.getElementById('listContainer');
@@ -2338,6 +2452,9 @@ function generateList() {
     sharedHeader.innerHTML = '📦 ' + t('Objets communs') + ' <span class="age-badge">' + t('Pour tout le groupe') + '</span>';
     sharedSection.appendChild(sharedHeader);
 
+    const listConfig = getListConfig();
+    const savedCustom = listConfig.customItems || [];
+
     for (const [catKey, cat] of Object.entries(ITEMS)) {
         const sharedItems = cat.items
             .filter(item => item.scope === "shared" && itemMatchesTrip(item, cond))
@@ -2350,7 +2467,19 @@ function generateList() {
             }));
 
         const catEl = buildCategoryHtml(catKey, cat, sharedItems, 'shared');
-        if (catEl) sharedSection.appendChild(catEl);
+        const hasCustom = savedCustom.some(ci => ci.catKey === catKey && ci.scope === 'shared');
+        if (catEl) {
+            appendSavedCustomItems(catEl, savedCustom, catKey, 'shared');
+            sharedSection.appendChild(catEl);
+        } else if (hasCustom) {
+            const emptyCat = buildCategoryHtml(catKey, cat, [], 'shared');
+            if (!emptyCat) {
+                // Force-create a category shell for custom items only
+                const shell = buildCategoryShell(catKey, cat, 'shared');
+                appendSavedCustomItems(shell, savedCustom, catKey, 'shared');
+                sharedSection.appendChild(shell);
+            }
+        }
     }
 
     container.appendChild(sharedSection);
@@ -2378,7 +2507,15 @@ function generateList() {
                 }));
 
             const catEl = buildCategoryHtml(catKey, cat, personItems, 'p' + pIdx);
-            if (catEl) section.appendChild(catEl);
+            const hasCustom = savedCustom.some(ci => ci.catKey === catKey && ci.scope === 'personal');
+            if (catEl) {
+                appendSavedCustomItems(catEl, savedCustom, catKey, 'personal');
+                section.appendChild(catEl);
+            } else if (hasCustom) {
+                const shell = buildCategoryShell(catKey, cat, 'p' + pIdx);
+                appendSavedCustomItems(shell, savedCustom, catKey, 'personal');
+                section.appendChild(shell);
+            }
         }
 
         container.appendChild(section);
@@ -2450,6 +2587,7 @@ function addCustomItem(inputId, qtyId, btnEl) {
     const li = document.createElement('li');
     li.className = 'item-row';
     li.dataset.weight = 0;
+    li.dataset.custom = 'true';
     li.draggable = true;
     li.innerHTML = `
         <span class="drag-handle" title="Drag">⠿</span>
@@ -2797,7 +2935,7 @@ function recalcWeightFromDOM() {
 }
 
 function saveListConfig() {
-    const config = { removed: [], qtyOverrides: {} };
+    const config = { removed: [], qtyOverrides: {}, customItems: [] };
 
     // Collect current items from DOM to know what's still there
     const presentItems = new Set();
@@ -2810,6 +2948,24 @@ function saveListConfig() {
                 const qty = parseInt(qtySpan.dataset.qty) || 1;
                 config.qtyOverrides[origName] = qty;
             }
+        }
+    });
+
+    // Collect custom items from DOM
+    document.querySelectorAll('#listContainer .item-row[data-custom="true"]').forEach(row => {
+        const nameSpan = row.querySelector('.item-name');
+        const qtySpan = row.querySelector('.item-qty');
+        const catDiv = row.closest('.category');
+        if (!nameSpan || !catDiv) return;
+        const name = nameSpan.textContent.trim();
+        if (!name) return;
+        const catKey = catDiv.dataset.catKey || '';
+        const section = catDiv.dataset.section || 'shared';
+        const scope = section === 'shared' ? 'shared' : 'personal';
+        const qty = qtySpan ? (parseInt(qtySpan.dataset.qty) || 1) : 1;
+        // Avoid duplicates
+        if (!config.customItems.some(ci => ci.name === name && ci.catKey === catKey && ci.scope === scope)) {
+            config.customItems.push({ name, catKey, scope, qty });
         }
     });
 
@@ -2836,11 +2992,22 @@ function saveListConfig() {
     }
 
     localStorage.setItem(LIST_CONFIG_KEY, JSON.stringify(config));
-    showToast(t('Configuration sauvegardée ✓'), 'success');
+
+    // If "apply to all" is checked, config is global (already saved above).
+    // If unchecked, mark it as trip-specific so it can be cleared on next different trip.
+    const applyAll = document.getElementById('applyAllCheck').checked;
+    if (applyAll) {
+        localStorage.removeItem('packinglist_listconfig_triponly');
+        showToast(t('Configuration sauvegardée pour toutes les configurations ✓'), 'success');
+    } else {
+        localStorage.setItem('packinglist_listconfig_triponly', 'true');
+        showToast(t('Configuration sauvegardée pour ce voyage uniquement ✓'), 'success');
+    }
 }
 
 function resetListConfig() {
     localStorage.removeItem(LIST_CONFIG_KEY);
+    localStorage.removeItem('packinglist_listconfig_triponly');
     showToast(t('Configuration réinitialisée'), 'info');
     // Regenerate the list to reflect the reset
     generateList();

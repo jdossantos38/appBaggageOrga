@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bagages-v5';
+const CACHE_NAME = 'bagages-v6';
 const ASSETS = [
     './',
     './index.html',
