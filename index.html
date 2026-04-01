@@ -225,8 +225,6 @@
 
         /* ── Result panel ── */
         #resultSection { display: none; }
-        #formSection { display: none; }
-        #stepsBar { display: none; }
 
         .summary-bar {
             display: flex;
@@ -1991,8 +1989,10 @@ function applyLanguage() {
 
     // Buttons
     document.getElementById('btnGenerate').textContent = '🧳 ' + t('Générer la liste');
-    document.getElementById('btnHomeFromForm').textContent = '🏠 ' + t('Accueil');
-    document.getElementById('btnHomeFromResult').textContent = '🏠 ' + t('Accueil');
+    var _hf = document.getElementById('btnHomeFromForm');
+    var _hr = document.getElementById('btnHomeFromResult');
+    if (_hf) _hf.textContent = '🏠 ' + t('Accueil');
+    if (_hr) _hr.textContent = '🏠 ' + t('Accueil');
     document.getElementById('resultTitle').textContent = '📋 ' + t('Votre liste de bagages');
     document.getElementById('btnBack').textContent = '← ' + t('Modifier le voyage');
     document.getElementById('btnPrint').textContent = '🖨️ ' + t('Imprimer');
@@ -2010,12 +2010,16 @@ function applyLanguage() {
     // Export button
     document.getElementById('btnExport').textContent = '📋 ' + t('Copier la liste');
 
-    // Homepage
-    document.getElementById('homeTitle').textContent = t('Préparez vos bagages en toute sérénité');
-    document.getElementById('homeSubtitle').textContent = t('Créez une nouvelle liste ou reprenez un voyage enregistré');
-    document.getElementById('btnNewTrip').textContent = '➕ ' + t('Nouveau voyage');
-    document.getElementById('homeTripsTitle').textContent = '📂 ' + t('Vos voyages enregistrés');
-    renderHomeTripList();
+    // Homepage (null guards for old cached HTML)
+    var _ht = document.getElementById('homeTitle');
+    var _hs = document.getElementById('homeSubtitle');
+    var _bn = document.getElementById('btnNewTrip');
+    var _htt = document.getElementById('homeTripsTitle');
+    if (_ht) _ht.textContent = t('Préparez vos bagages en toute sérénité');
+    if (_hs) _hs.textContent = t('Créez une nouvelle liste ou reprenez un voyage enregistré');
+    if (_bn) _bn.textContent = '➕ ' + t('Nouveau voyage');
+    if (_htt) _htt.textContent = '📂 ' + t('Vos voyages enregistrés');
+    if (typeof renderHomeTripList === 'function' && document.getElementById('homeTripList')) renderHomeTripList();
 
     // Config bar
     document.getElementById('btnSaveConfig').textContent = '💾 ' + t('Sauvegarder la configuration');
@@ -2868,7 +2872,9 @@ function goBack() {
 // ─────────────────────────────────────────────
 
 function showHomePage() {
-    document.getElementById('homePage').style.display = '';
+    var hp = document.getElementById('homePage');
+    if (!hp) return; // old cached HTML without homepage
+    hp.style.display = '';
     document.getElementById('stepsBar').style.display = 'none';
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('resultSection').style.display = 'none';
