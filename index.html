@@ -2856,9 +2856,9 @@ function resetChecks() {
 }
 
 function goBack() {
-    document.getElementById('formSection').style.display = '';
+    document.getElementById('formSection').style.display = 'block';
     document.getElementById('resultSection').style.display = 'none';
-    document.getElementById('stepsBar').style.display = '';
+    document.getElementById('stepsBar').style.display = 'flex';
     document.getElementById('stepInd1').classList.add('active');
     document.getElementById('stepInd2').classList.remove('active');
 }
@@ -2877,8 +2877,8 @@ function showHomePage() {
 
 function goToNewTrip() {
     document.getElementById('homePage').style.display = 'none';
-    document.getElementById('stepsBar').style.display = '';
-    document.getElementById('formSection').style.display = '';
+    document.getElementById('stepsBar').style.display = 'flex';
+    document.getElementById('formSection').style.display = 'block';
     document.getElementById('resultSection').style.display = 'none';
     document.getElementById('stepInd1').classList.add('active');
     document.getElementById('stepInd2').classList.remove('active');
@@ -2923,7 +2923,7 @@ function loadTripFromHome(tripName) {
 
     // Hide homepage, generate list directly
     document.getElementById('homePage').style.display = 'none';
-    document.getElementById('stepsBar').style.display = '';
+    document.getElementById('stepsBar').style.display = 'flex';
     generateList();
 }
 
