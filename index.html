@@ -1198,7 +1198,8 @@
                     <label><span class="icon">📍</span> <span data-i18n="destination">Destination</span></label>
                     <select id="destination">
                         <option value="france" data-i18n-opt="france">🇫🇷 France</option>
-                        <option value="abroad" data-i18n-opt="abroad">✈️ Étranger</option>
+                        <option value="eu" data-i18n-opt="eu">🇪🇺 Europe (UE)</option>
+                        <option value="abroad" data-i18n-opt="abroad">🌍 Hors Europe</option>
                     </select>
                 </div>
 
@@ -1209,6 +1210,7 @@
                         <option value="car" data-i18n-opt="car">🚗 Voiture</option>
                         <option value="train" data-i18n-opt="train">🚆 Train</option>
                         <option value="flight" data-i18n-opt="flight">✈️ Avion</option>
+                        <option value="boat" data-i18n-opt="boat">🚢 Bateau</option>
                     </select>
                 </div>
 
@@ -1251,6 +1253,7 @@
                         <label><input type="checkbox" value="skiing"> <span data-i18n-opt="skiing">⛷️ Ski</span></label>
                         <label><input type="checkbox" value="celebration"> <span data-i18n-opt="celebration">🎉 Fête / Célébration</span></label>
                         <label><input type="checkbox" value="swimming"> <span data-i18n-opt="swimming">🏊 Baignade / Plage</span></label>
+                        <label><input type="checkbox" value="biking"> <span data-i18n-opt="biking">🚴 Vélo</span></label>
                     </div>
                 </div>
             </div>
@@ -1398,6 +1401,11 @@ const EN = {
     "Tenue de soirée": "Evening wear",
     "Chaussures habillées": "Dress shoes",
     "Chaussures de marche confortables": "Comfortable walking shoes",
+    "Cuissard / Short vélo": "Cycling shorts",
+    "Maillot / T-shirt vélo": "Cycling jersey / T-shirt",
+    "Gants de vélo": "Cycling gloves",
+    "Veste coupe-vent vélo": "Cycling windbreaker",
+    "Chaussures de vélo / Baskets": "Cycling shoes / Trainers",
 
     // Medical
     "Trousse de premiers secours": "First aid kit",
@@ -1441,6 +1449,15 @@ const EN = {
     "Sac de plage": "Beach bag",
     "Jeux gonflables / Ballon": "Inflatable toys / Ball",
     "Chaise haute portable / Réhausseur": "Portable high chair / Booster seat",
+    "Casque de vélo": "Cycling helmet",
+    "Kit réparation vélo (chambre à air, rustines, pompe)": "Bike repair kit (inner tube, patches, pump)",
+    "Antivol vélo": "Bike lock",
+    "Éclairage vélo (avant + arrière)": "Bike lights (front + rear)",
+    "Gilet réfléchissant (vélo)": "Reflective vest (cycling)",
+    "Bidon / Porte-bidon": "Water bottle / Bottle cage",
+    "Sacoche vélo / Sac à dos compact": "Bike pannier / Compact backpack",
+    "Médicament anti-mal de mer": "Seasickness medicine",
+    "Bracelets anti-nausée": "Anti-nausea wristbands",
 
     // Documents
     "Carte d'identité": "ID card",
@@ -1472,6 +1489,8 @@ const EN = {
     "Rallonge / Multiprise": "Extension cord / Power strip",
     "Lampe torche / Frontale + piles": "Flashlight / Headlamp + batteries",
     "Chargeur voiture (USB)": "Car charger (USB)",
+    "Smartphone + chargeur": "Smartphone + charger",
+    "Compteur / GPS vélo": "Bike computer / GPS",
 
     // Sleeping
     "Tente": "Tent",
@@ -1572,10 +1591,13 @@ const EN = {
     "🍂 Automne": "🍂 Fall",
     "❄️ Hiver": "❄️ Winter",
     "🇫🇷 France": "🇫🇷 France",
+    "🇪🇺 Europe (UE)": "🇪🇺 Europe (EU)",
+    "🌍 Hors Europe": "🌍 Outside Europe",
     "✈️ Étranger": "✈️ Abroad",
     "🚗 Voiture": "🚗 Car",
     "🚆 Train": "🚆 Train",
     "✈️ Avion": "✈️ Flight",
+    "🚢 Bateau": "🚢 Boat",
     "⛺ Camping": "⛺ Camping",
     "🏨 Hôtel/Auberge": "🏨 Hotel/Hostel",
     "👨‍👩‍👧 Famille/Location": "👨‍👩‍👧 Family/Rental",
@@ -1583,10 +1605,12 @@ const EN = {
     "⛷️ Ski": "⛷️ Skiing",
     "🎉 Fête": "🎉 Party",
     "🏊 Baignade": "🏊 Swimming",
+    "🚴 Vélo": "🚴 Biking",
     "🥾 Randonnée / Marche": "🥾 Hiking / Walking",
     "⛷️ Ski": "⛷️ Skiing",
     "🎉 Fête / Célébration": "🎉 Party / Celebration",
     "🏊 Baignade / Plage": "🏊 Swimming / Beach",
+    "🚴 Vélo": "🚴 Biking",
     "👨‍👩‍👧 Famille / Location": "👨‍👩‍👧 Family / Rental",
     "🏨 Hôtel / Auberge": "🏨 Hotel / Hostel",
 
@@ -1794,11 +1818,12 @@ function applyLanguage() {
     // Select options
     const optMap = {
         summer: '☀️ Été', spring: '🌸 Printemps', fall: '🍂 Automne', winter: '❄️ Hiver',
-        france: '🇫🇷 France', abroad: '✈️ Étranger',
-        car: '🚗 Voiture', train: '🚆 Train', flight: '✈️ Avion',
+        france: '🇫🇷 France', eu: '🇪🇺 Europe (UE)', abroad: '🌍 Hors Europe',
+        car: '🚗 Voiture', train: '🚆 Train', flight: '✈️ Avion', boat: '🚢 Bateau',
         family: '👨‍👩‍👧 Famille / Location', hostel: '🏨 Hôtel / Auberge', camp: '⛺ Camping',
         walking: '🥾 Randonnée / Marche', skiing: '⛷️ Ski',
         celebration: '🎉 Fête / Célébration', swimming: '🏊 Baignade / Plage',
+        biking: '🚴 Vélo',
     };
     document.querySelectorAll('[data-i18n-opt]').forEach(el => {
         const key = el.getAttribute('data-i18n-opt');
@@ -1917,6 +1942,11 @@ const ITEMS = {
             { name: "Tenue de soirée", qty: 1, scope: "personal", condition: c => c.activities.includes("celebration"), personCondition: p => p.ageGroup !== "baby", weight: 500 },
             { name: "Chaussures habillées", qty: 1, scope: "personal", condition: c => c.activities.includes("celebration"), personCondition: p => p.ageGroup !== "baby", weight: 600 },
             { name: "Chaussures de marche confortables", qty: 1, scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 700 },
+            { name: "Cuissard / Short vélo", qty: 2, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Maillot / T-shirt vélo", qty: 2, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Gants de vélo", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 50 },
+            { name: "Veste coupe-vent vélo", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Chaussures de vélo / Baskets", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 600 },
         ]
     },
 
@@ -1935,7 +1965,7 @@ const ITEMS = {
             { name: "Thermomètre", qty: 1, scope: "shared", weight: 20 },
             { name: "Anti-diarrhéique", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 30 },
             { name: "Sels de réhydratation", qty: 1, scope: "shared", condition: c => c.destination === "abroad" || c.season === "summer", weight: 30 },
-            { name: "Médicament anti-mal des transports", qty: 1, scope: "shared", condition: c => ["car","flight"].includes(c.transport), weight: 30 },
+            { name: "Médicament anti-mal des transports", qty: 1, scope: "shared", condition: c => ["car","flight","boat"].includes(c.transport), weight: 30 },
             { name: "Pansements ampoules", qty: 1, scope: "shared", condition: c => c.activities.includes("walking") || c.activities.includes("skiing"), weight: 20 },
             { name: "Gel anti-douleur musculaire", qty: 1, scope: "shared", condition: c => c.activities.includes("walking") || c.activities.includes("skiing"), weight: 100 },
             { name: "Antihistaminiques (allergies)", qty: 1, scope: "shared", weight: 30 },
@@ -1970,6 +2000,15 @@ const ITEMS = {
             { name: "Sac de plage", qty: 1, scope: "shared", condition: c => c.activities.includes("swimming"), weight: 200 },
             { name: "Jeux gonflables / Ballon", qty: 1, scope: "shared", condition: c => c.activities.includes("swimming") || c.accommodation === "camp", weight: 300 },
             { name: "Chaise haute portable / Réhausseur", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby" || (p.ageGroup === "child" && p.age < 5), weight: 2000 },
+            { name: "Casque de vélo", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 300 },
+            { name: "Kit réparation vélo (chambre à air, rustines, pompe)", qty: 1, scope: "shared", condition: c => c.activities.includes("biking"), weight: 400 },
+            { name: "Antivol vélo", qty: 1, scope: "shared", condition: c => c.activities.includes("biking"), weight: 300 },
+            { name: "Éclairage vélo (avant + arrière)", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 80 },
+            { name: "Gilet réfléchissant (vélo)", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 80 },
+            { name: "Bidon / Porte-bidon", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Sacoche vélo / Sac à dos compact", qty: 1, scope: "personal", condition: c => c.activities.includes("biking"), personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 500 },
+            { name: "Médicament anti-mal de mer", qty: 1, scope: "shared", condition: c => c.transport === "boat", weight: 30 },
+            { name: "Bracelets anti-nausée", qty: 1, scope: "personal", condition: c => c.transport === "boat", weight: 20 },
         ]
     },
 
@@ -1977,11 +2016,11 @@ const ITEMS = {
         label: "📄 Documents",
         cssClass: "cat-documents",
         items: [
-            { name: "Carte d'identité", qty: 1, scope: "personal", condition: c => c.destination === "france", weight: 10 },
+            { name: "Carte d'identité", qty: 1, scope: "personal", condition: c => c.destination === "france" || c.destination === "eu", weight: 10 },
             { name: "Passeport", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 30 },
             { name: "Visa (si nécessaire)", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 5 },
-            { name: "Attestation d'assurance voyage", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 10 },
-            { name: "Carte européenne d'assurance maladie (CEAM)", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 5 },
+            { name: "Attestation d'assurance voyage", qty: 1, scope: "shared", condition: c => c.destination !== "france", weight: 10 },
+            { name: "Carte européenne d'assurance maladie (CEAM)", qty: 1, scope: "personal", condition: c => c.destination === "eu", weight: 5 },
             { name: "Carnet de vaccination", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 30 },
             { name: "Confirmations de réservation (imprimées)", qty: 1, scope: "shared", weight: 20 },
             { name: "Billets d'avion / Carte d'embarquement", qty: 1, scope: "personal", condition: c => c.transport === "flight", weight: 10 },
@@ -1990,7 +2029,7 @@ const ITEMS = {
             { name: "Assurance auto / Carte verte", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 10 },
             { name: "Cartes routières / GPS préparé", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 100 },
             { name: "Liste des contacts d'urgence", qty: 1, scope: "shared", weight: 5 },
-            { name: "Copies des documents (sac séparé)", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 30 },
+            { name: "Copies des documents (sac séparé)", qty: 1, scope: "shared", condition: c => c.destination !== "france", weight: 30 },
             { name: "Devises étrangères / Carte de paiement", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 20 },
             { name: "Carnet de santé (enfant)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby" || p.ageGroup === "child", weight: 50 },
         ]
@@ -2011,6 +2050,8 @@ const ITEMS = {
             { name: "Rallonge / Multiprise", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 300 },
             { name: "Lampe torche / Frontale + piles", qty: 1, scope: "personal", condition: c => c.accommodation === "camp" || c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 100 },
             { name: "Chargeur voiture (USB)", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 50 },
+            { name: "Smartphone + chargeur", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "child" && p.age >= 12, weight: 220 },
+            { name: "Compteur / GPS vélo", qty: 1, scope: "shared", condition: c => c.activities.includes("biking"), weight: 100 },
         ]
     },
 
@@ -2046,7 +2087,7 @@ const ITEMS = {
             { name: "Tasses / Mugs", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", personCondition: p => p.ageGroup !== "baby", weight: 150 },
             { name: "Ouvre-boîte / Décapsuleur", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 50 },
             { name: "Gourdes", qty: 1, scope: "personal", weight: 200 },
-            { name: "Encas pour le trajet", qty: 1, scope: "shared", condition: c => ["car","train"].includes(c.transport), weight: 300 },
+            { name: "Encas pour le trajet", qty: 1, scope: "shared", condition: c => ["car","train","boat"].includes(c.transport), weight: 300 },
             { name: "Sacs poubelle", qty: 3, scope: "shared", condition: c => c.accommodation === "camp", weight: 30 },
             { name: "Liquide vaisselle + éponge", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 200 },
             { name: "Allumettes / Briquet", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 20 },
@@ -2074,7 +2115,7 @@ const ITEMS = {
             { name: "Kit de sécurité voiture (triangle, gilet)", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 800 },
             { name: "Gilet fluorescent", qty: 1, scope: "personal", condition: c => c.transport === "car", personCondition: p => p.ageGroup !== "baby", weight: 80 },
             { name: "Siège auto (enfant)", qty: 1, scope: "personal", condition: c => c.transport === "car", personCondition: p => p.ageGroup === "baby" || p.ageGroup === "child", weight: 8000 },
-            { name: "Guide de conversation / Appli traduction", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 200 },
+            { name: "Guide de conversation / Appli traduction", qty: 1, scope: "shared", condition: c => c.destination !== "france", weight: 200 },
         ]
     }
 };
@@ -2402,10 +2443,10 @@ function generateList() {
 
     // Summary bar
     const seasonIcons = { summer: t("☀️ Été"), spring: t("🌸 Printemps"), fall: t("🍂 Automne"), winter: t("❄️ Hiver") };
-    const destIcons = { france: t("🇫🇷 France"), abroad: t("✈️ Étranger") };
-    const transIcons = { car: t("🚗 Voiture"), train: t("🚆 Train"), flight: t("✈️ Avion") };
+    const destIcons = { france: t("🇫🇷 France"), eu: t("🇪🇺 Europe (UE)"), abroad: t("🌍 Hors Europe") };
+    const transIcons = { car: t("🚗 Voiture"), train: t("🚆 Train"), flight: t("✈️ Avion"), boat: t("🚢 Bateau") };
     const accomIcons = { camp: t("⛺ Camping"), hostel: t("🏨 Hôtel/Auberge"), family: t("👨‍👩‍👧 Famille/Location") };
-    const actIcons = { walking: t("🥾 Randonnée"), skiing: t("⛷️ Ski"), celebration: t("🎉 Fête"), swimming: t("🏊 Baignade") };
+    const actIcons = { walking: t("🥾 Randonnée"), skiing: t("⛷️ Ski"), celebration: t("🎉 Fête"), swimming: t("🏊 Baignade"), biking: t("🚴 Vélo") };
 
     let tags = `
         <span class="summary-tag">👥 ${cond.persons} ${cond.persons > 1 ? (currentLang === 'en' ? 'people' : 'personnes') : (currentLang === 'en' ? 'person' : 'personne')}</span>
