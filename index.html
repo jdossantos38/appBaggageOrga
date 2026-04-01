@@ -180,6 +180,10 @@
             border-color: var(--primary);
             background: #eff6ff;
         }
+        .checkbox-group label.cb-checked {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
 
         .btn {
             display: inline-flex;
@@ -225,6 +229,8 @@
 
         /* ── Result panel ── */
         #resultSection { display: none; }
+        #formSection { display: none; }
+        #stepsBar { display: none; }
 
         .summary-bar {
             display: flex;
@@ -1853,6 +1859,9 @@ function renderHelp() {
         <button class="help-close" onclick="toggleHelp()">✕</button>
         <h2>❓ Help — How to use</h2>
 
+        <h3>🏠 Homepage</h3>
+        <p>The app opens to a homepage showing your <strong>saved trips</strong>. Click any trip to load it and jump directly to the packing list. Click <strong>"New trip"</strong> to start from scratch. Use the <span class="help-shortcut">🏠 Home</span> button to return anytime.</p>
+
         <h3>🧳 1. Configure your trip</h3>
         <ul>
             <li>Fill in the number of travelers, season, destination (France / Europe EU / outside Europe), transport (car, plane, train, boat), accommodation, and trip duration.</li>
@@ -1868,7 +1877,7 @@ function renderHelp() {
             <li>Use <span class="help-shortcut">−</span> / <span class="help-shortcut">+</span> to adjust quantities.</li>
             <li>Click <span class="help-shortcut">×</span> to remove an item you don't need.</li>
             <li>Use the "Add an item…" row at the bottom of each category to add your own items.</li>
-            <li>Drag items with the <span class="help-shortcut">⠿</span> handle to reorder within a category.</li>
+            <li>Drag items with the <span class="help-shortcut">⠿</span> handle to reorder within a category (works with touch on mobile too).</li>
         </ul>
 
         <h3>💾 3. Save your configuration</h3>
@@ -1896,6 +1905,9 @@ function renderHelp() {
         <button class="help-close" onclick="toggleHelp()">✕</button>
         <h2>❓ Aide — Mode d'emploi</h2>
 
+        <h3>🏠 Page d'accueil</h3>
+        <p>L'application s'ouvre sur une page d'accueil affichant vos <strong>voyages enregistrés</strong>. Cliquez sur un voyage pour charger directement sa liste. Cliquez <strong>« Nouveau voyage »</strong> pour en créer un nouveau. Utilisez le bouton <span class="help-shortcut">🏠 Accueil</span> pour y revenir à tout moment.</p>
+
         <h3>🧳 1. Configurer votre voyage</h3>
         <ul>
             <li>Remplissez le nombre de voyageurs, la saison, la destination (France / Europe UE / hors Europe), le transport (voiture, avion, train, bateau), l'hébergement et la durée.</li>
@@ -1911,7 +1923,7 @@ function renderHelp() {
             <li>Utilisez <span class="help-shortcut">−</span> / <span class="help-shortcut">+</span> pour ajuster les quantités.</li>
             <li>Cliquez sur <span class="help-shortcut">×</span> pour supprimer un objet inutile.</li>
             <li>Utilisez la ligne « Ajouter un objet… » en bas de chaque catégorie pour ajouter vos propres objets.</li>
-            <li>Glissez les objets avec la poignée <span class="help-shortcut">⠿</span> pour réordonner dans une catégorie.</li>
+            <li>Glissez les objets avec la poignée <span class="help-shortcut">⠿</span> pour réordonner dans une catégorie (fonctionne aussi au tactile sur mobile).</li>
         </ul>
 
         <h3>💾 3. Sauvegarder votre configuration</h3>
@@ -2675,7 +2687,7 @@ function generateList() {
             .map(item => ({
                 name: t(item.name),
                 origName: item.name,
-                qty: getCustomQty(item.name) ?? (item.qtyFn ? item.qtyFn(null, cond) : (item.qty || 1)),
+                qty: (function(){ var cq = getCustomQty(item.name); return cq != null ? cq : (item.qtyFn ? item.qtyFn(null, cond) : (item.qty || 1)); })(),
                 weight: item.weight || 0
             }));
 
@@ -2715,7 +2727,7 @@ function generateList() {
                 .map(item => ({
                     name: t(item.name),
                     origName: item.name,
-                    qty: getCustomQty(item.name) ?? computeQty(item, person, cond),
+                    qty: (function(){ var cq = getCustomQty(item.name); return cq != null ? cq : computeQty(item, person, cond); })(),
                     weight: item.weight || 0
                 }));
 
@@ -2997,6 +3009,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show homepage by default
     showHomePage();
+
+    // :has() CSS fallback for older Android — toggle class on checkbox change
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(function(cb) {
+        function updateParent() {
+            if (cb.checked) cb.parentElement.classList.add('cb-checked');
+            else cb.parentElement.classList.remove('cb-checked');
+        }
+        cb.addEventListener('change', updateParent);
+        updateParent();
+    });
+
+    // Touch drag & drop delegation for mobile
+    var lc = document.getElementById('listContainer');
+    if (lc) {
+        lc.addEventListener('touchstart', handleTouchStart, { passive: false });
+        lc.addEventListener('touchmove', handleTouchMove, { passive: false });
+        lc.addEventListener('touchend', handleTouchEnd);
+    }
 
     // Register Service Worker for offline / PWA
     if ('serviceWorker' in navigator) {
@@ -3470,6 +3500,61 @@ function handleDrop(e) {
 function handleDragEnd(e) {
     this.classList.remove('dragging');
     document.querySelectorAll('.item-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+// ─────────────────────────────────────────────
+//  TOUCH DRAG & DROP (mobile)
+// ─────────────────────────────────────────────
+
+var touchDragEl = null;
+var touchStartY = 0;
+var touchClone = null;
+
+function handleTouchStart(e) {
+    var handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    var row = handle.closest('.item-row');
+    if (!row) return;
+    touchDragEl = row;
+    touchStartY = e.touches[0].clientY;
+    row.classList.add('dragging');
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    if (!touchDragEl) return;
+    e.preventDefault();
+    var touchY = e.touches[0].clientY;
+    var list = touchDragEl.closest('.item-list');
+    if (!list) return;
+    var rows = list.querySelectorAll('.item-row');
+    rows.forEach(function(r) { r.classList.remove('drag-over'); });
+    var target = document.elementFromPoint(e.touches[0].clientX, touchY);
+    if (target) {
+        var targetRow = target.closest('.item-row');
+        if (targetRow && targetRow !== touchDragEl && targetRow.closest('.item-list') === list) {
+            targetRow.classList.add('drag-over');
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!touchDragEl) return;
+    var overEl = document.querySelector('.item-row.drag-over');
+    if (overEl && overEl !== touchDragEl) {
+        var list = touchDragEl.closest('.item-list');
+        var items = Array.prototype.slice.call(list.querySelectorAll('.item-row'));
+        var fromIdx = items.indexOf(touchDragEl);
+        var toIdx = items.indexOf(overEl);
+        if (fromIdx < toIdx) {
+            list.insertBefore(touchDragEl, overEl.nextSibling);
+        } else {
+            list.insertBefore(touchDragEl, overEl);
+        }
+    }
+    touchDragEl.classList.remove('dragging');
+    document.querySelectorAll('.item-row.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+    touchDragEl = null;
 }
 
 // ─────────────────────────────────────────────
