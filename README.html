@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>README — Trip Packing List / Liste de Bagages</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .lang-toggle { display: none !important; }
+            .section-fr, .section-en { display: block !important; }
+            .section-en { page-break-before: always; }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .lang-toggle {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0.75rem 0;
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 1.5rem;
+        }
+        .lang-toggle button {
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #2563eb;
+            background: #fff;
+            color: #2563eb;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 0.25rem;
+            transition: all 0.2s;
+        }
+        .lang-toggle button.active {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.4rem;
+            color: #1d4ed8;
+            margin-top: 1.8rem;
+            margin-bottom: 0.6rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.3rem;
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        p { margin-bottom: 0.7rem; }
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.7rem;
+        }
+        li { margin-bottom: 0.3rem; }
+        code {
+            background: #f1f5f9;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
+
+        .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        th { background: #f1f5f9; font-weight: 600; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="lang-toggle">
+    <button id="btnFR" class="active" onclick="showLang('fr')">🇫🇷 Français</button>
+    <button id="btnEN" onclick="showLang('en')">🇬🇧 English</button>
+    <button onclick="window.print()" style="margin-left:1rem; background:#f1f5f9; border-color:#94a3b8; color:#475569;">🖨️ PDF / Print</button>
+</div>
+
+<!-- ═══════════════════════════════════════ FRENCH ═══════════════════════════════════════ -->
+<div class="section-fr" id="sectionFR">
+
+<h1>🧳 Liste de Bagages — README</h1>
+<p class="subtitle">Générateur intelligent de listes de bagages pour vos voyages</p>
+
+<h2>📖 Description</h2>
+<p>
+    <strong>Liste de Bagages</strong> est une application web progressive (PWA) qui génère automatiquement
+    des listes de bagages personnalisées selon vos conditions de voyage : saison, destination, transport,
+    hébergement, durée et participants (bébé, enfant, ado, adulte).
+</p>
+<p>
+    L'application fonctionne entièrement dans le navigateur, sans serveur ni connexion requise après
+    le premier chargement. Toutes les données restent sur votre appareil (localStorage).
+</p>
+
+<h2>✨ Fonctionnalités</h2>
+
+<h3>Génération intelligente</h3>
+<ul>
+    <li>Liste adaptée selon la <strong>saison</strong> (été, hiver, printemps, automne)</li>
+    <li>Objets ajustés selon la <strong>destination</strong> (plage, montagne, ville, camping, road-trip)</li>
+    <li>Contenu filtré par <strong>transport</strong> (voiture, avion, train, bus)</li>
+    <li>Objets par <strong>hébergement</strong> (hôtel, Airbnb, camping, chez des amis)</li>
+    <li>Quantités calculées selon la <strong>durée</strong> du voyage</li>
+    <li>Onglets séparés : <strong>objets communs</strong> + un onglet par participant</li>
+    <li>Catégories par <strong>tranche d'âge</strong> : bébé (0-2), enfant (3-11), ado (12-17), adulte (18+)</li>
+    <li>Activités spéciales : randonnée, ski, baignade, fête</li>
+</ul>
+
+<h3>Personnalisation de la liste</h3>
+<ul>
+    <li>Cocher les objets au fur et à mesure — progression sauvegardée automatiquement</li>
+    <li>Ajuster les quantités avec les boutons <strong>−/+</strong></li>
+    <li>Supprimer des objets prédéfinis avec le bouton <strong>×</strong></li>
+    <li>Ajouter des objets personnalisés en bas de chaque catégorie</li>
+    <li>Réordonner les objets par glisser-déposer</li>
+    <li>Sauvegarder la configuration (suppressions + quantités modifiées)</li>
+</ul>
+
+<h3>Sauvegarde et export</h3>
+<ul>
+    <li><strong>Profils de participants</strong> — sauvegarder/charger les noms et âges</li>
+    <li><strong>Voyages complets</strong> — sauvegarder/charger toute la configuration du formulaire</li>
+    <li><strong>Copier la liste</strong> en texte (presse-papier) pour partager par message</li>
+    <li><strong>Imprimer</strong> la liste complète</li>
+</ul>
+
+<h3>Autres fonctionnalités</h3>
+<ul>
+    <li>⚖️ <strong>Estimation du poids</strong> total avec avertissement pour les bagages cabine (10 kg)</li>
+    <li>🌐 Interface <strong>bilingue</strong> français / anglais</li>
+    <li>📱 <strong>PWA</strong> — installable sur l'écran d'accueil (iOS + Android)</li>
+    <li>📶 Fonctionne <strong>hors-ligne</strong> après le premier chargement</li>
+    <li>❓ <strong>Aide intégrée</strong> — bouton ? flottant avec guide complet</li>
+</ul>
+
+<h2>🛠️ Technologie</h2>
+<table>
+    <tr><th>Composant</th><th>Détail</th></tr>
+    <tr><td>Frontend</td><td>HTML / CSS / JavaScript pur (fichier unique)</td></tr>
+    <tr><td>Stockage</td><td>localStorage (aucun serveur)</td></tr>
+    <tr><td>PWA</td><td>Service Worker + Web App Manifest</td></tr>
+    <tr><td>Compatibilité</td><td>Safari iOS, Chrome Android, navigateurs modernes</td></tr>
+</table>
+
+<h2>📁 Structure des fichiers</h2>
+<table>
+    <tr><th>Fichier</th><th>Rôle</th></tr>
+    <tr><td><code>index.html</code></td><td>Application complète (HTML + CSS + JS)</td></tr>
+    <tr><td><code>sw.js</code></td><td>Service Worker pour le cache hors-ligne</td></tr>
+    <tr><td><code>manifest.json</code></td><td>Manifeste PWA (nom, icônes, thème)</td></tr>
+    <tr><td><code>icon-192.png</code></td><td>Icône 192×192</td></tr>
+    <tr><td><code>icon-512.png</code></td><td>Icône 512×512</td></tr>
+    <tr><td><code>generate-icons.html</code></td><td>Utilitaire pour générer les icônes</td></tr>
+    <tr><td><code>README.html</code></td><td>Ce document (FR/EN)</td></tr>
+    <tr><td><code>howto.html</code></td><td>Guide pas-à-pas (FR/EN)</td></tr>
+</table>
+
+<h2>🚀 Installation / Déploiement</h2>
+<ol>
+    <li>Copiez tous les fichiers dans un même dossier</li>
+    <li>Servez avec n'importe quel serveur HTTP :
+        <br><code>python -m http.server 8080</code>
+    </li>
+    <li>Ouvrez <code>http://localhost:8080</code> dans votre navigateur</li>
+    <li>Sur mobile : utilisez l'adresse IP de votre ordinateur (ex: <code>http://172.20.10.3:8080</code>)</li>
+</ol>
+<p>Aucune build ni dépendance n'est requise. Tout fonctionne avec des fichiers statiques.</p>
+
+<h2>📲 Installation PWA</h2>
+<ul>
+    <li><strong>iPhone / iPad</strong> : Safari → Partager → « Sur l'écran d'accueil »</li>
+    <li><strong>Android</strong> : Chrome → menu ⋮ → « Installer l'application »</li>
+    <li><strong>PC</strong> : Chrome → barre d'adresse → icône d'installation</li>
+</ul>
+
+<h2>🔐 Confidentialité</h2>
+<p>Aucune donnée n'est envoyée à un serveur. Toutes les informations sont stockées localement
+dans le navigateur via <code>localStorage</code>. Le Service Worker met en cache les fichiers
+pour le fonctionnement hors-ligne uniquement.</p>
+
+<h2>📝 Clés localStorage</h2>
+<table>
+    <tr><th>Clé</th><th>Contenu</th></tr>
+    <tr><td><code>packinglist_lang</code></td><td>Langue sélectionnée (fr/en)</td></tr>
+    <tr><td><code>packinglist_profiles</code></td><td>Profils de participants sauvegardés</td></tr>
+    <tr><td><code>packinglist_last_profile</code></td><td>Dernier profil chargé</td></tr>
+    <tr><td><code>packinglist_checks</code></td><td>État des cases cochées</td></tr>
+    <tr><td><code>packinglist_trips</code></td><td>Voyages complets sauvegardés</td></tr>
+    <tr><td><code>packinglist_listconfig</code></td><td>Configuration de liste (suppressions, quantités)</td></tr>
+</table>
+
+</div>
+
+<!-- ═══════════════════════════════════════ ENGLISH ═══════════════════════════════════════ -->
+<div class="section-en hidden" id="sectionEN">
+
+<h1>🧳 Trip Packing List — README</h1>
+<p class="subtitle">Smart packing list generator for your trips</p>
+
+<h2>📖 Description</h2>
+<p>
+    <strong>Trip Packing List</strong> is a progressive web app (PWA) that automatically generates
+    personalized packing lists based on your travel conditions: season, destination, transport,
+    accommodation, duration, and participants (baby, child, teen, adult).
+</p>
+<p>
+    The app runs entirely in the browser with no server or internet connection required after the
+    first load. All data stays on your device (localStorage).
+</p>
+
+<h2>✨ Features</h2>
+
+<h3>Smart Generation</h3>
+<ul>
+    <li>List adapted by <strong>season</strong> (summer, winter, spring, fall)</li>
+    <li>Items adjusted by <strong>destination</strong> (beach, mountain, city, camping, road-trip)</li>
+    <li>Content filtered by <strong>transport</strong> (car, plane, train, bus)</li>
+    <li>Items by <strong>accommodation</strong> (hotel, Airbnb, camping, friends' place)</li>
+    <li>Quantities calculated based on <strong>trip duration</strong></li>
+    <li>Separate tabs: <strong>shared items</strong> + one tab per participant</li>
+    <li>Categories by <strong>age group</strong>: baby (0-2), child (3-11), teen (12-17), adult (18+)</li>
+    <li>Special activities: hiking, skiing, swimming, party</li>
+</ul>
+
+<h3>List Customization</h3>
+<ul>
+    <li>Check items as you pack — progress saved automatically</li>
+    <li>Adjust quantities with <strong>−/+</strong> buttons</li>
+    <li>Remove predefined items with the <strong>×</strong> button</li>
+    <li>Add custom items at the bottom of each category</li>
+    <li>Drag & drop to reorder items</li>
+    <li>Save configuration (removals + quantity changes)</li>
+</ul>
+
+<h3>Save & Export</h3>
+<ul>
+    <li><strong>Participant profiles</strong> — save/load names and ages</li>
+    <li><strong>Full trips</strong> — save/load the entire form configuration</li>
+    <li><strong>Copy list</strong> as text (clipboard) for sharing via messaging</li>
+    <li><strong>Print</strong> the complete list</li>
+</ul>
+
+<h3>Other Features</h3>
+<ul>
+    <li>⚖️ <strong>Weight estimate</strong> with cabin baggage warning (10 kg)</li>
+    <li>🌐 <strong>Bilingual</strong> interface — French / English</li>
+    <li>📱 <strong>PWA</strong> — installable on home screen (iOS + Android)</li>
+    <li>📶 Works <strong>offline</strong> after first load</li>
+    <li>❓ <strong>Built-in help</strong> — floating ? button with comprehensive guide</li>
+</ul>
+
+<h2>🛠️ Technology</h2>
+<table>
+    <tr><th>Component</th><th>Detail</th></tr>
+    <tr><td>Frontend</td><td>Pure HTML / CSS / JavaScript (single file)</td></tr>
+    <tr><td>Storage</td><td>localStorage (no server)</td></tr>
+    <tr><td>PWA</td><td>Service Worker + Web App Manifest</td></tr>
+    <tr><td>Compatibility</td><td>Safari iOS, Chrome Android, modern browsers</td></tr>
+</table>
+
+<h2>📁 File Structure</h2>
+<table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>index.html</code></td><td>Complete application (HTML + CSS + JS)</td></tr>
+    <tr><td><code>sw.js</code></td><td>Service Worker for offline caching</td></tr>
+    <tr><td><code>manifest.json</code></td><td>PWA manifest (name, icons, theme)</td></tr>
+    <tr><td><code>icon-192.png</code></td><td>192×192 icon</td></tr>
+    <tr><td><code>icon-512.png</code></td><td>512×512 icon</td></tr>
+    <tr><td><code>generate-icons.html</code></td><td>Icon generation utility</td></tr>
+    <tr><td><code>README.html</code></td><td>This document (FR/EN)</td></tr>
+    <tr><td><code>howto.html</code></td><td>Step-by-step guide (FR/EN)</td></tr>
+</table>
+
+<h2>🚀 Installation / Deployment</h2>
+<ol>
+    <li>Copy all files into the same folder</li>
+    <li>Serve with any HTTP server:
+        <br><code>python -m http.server 8080</code>
+    </li>
+    <li>Open <code>http://localhost:8080</code> in your browser</li>
+    <li>On mobile: use your computer's IP address (e.g. <code>http://172.20.10.3:8080</code>)</li>
+</ol>
+<p>No build step or dependencies required. Everything works with static files.</p>
+
+<h2>📲 PWA Installation</h2>
+<ul>
+    <li><strong>iPhone / iPad</strong>: Safari → Share → "Add to Home Screen"</li>
+    <li><strong>Android</strong>: Chrome → menu ⋮ → "Install app"</li>
+    <li><strong>PC</strong>: Chrome → address bar → install icon</li>
+</ul>
+
+<h2>🔐 Privacy</h2>
+<p>No data is sent to any server. All information is stored locally in the browser via
+<code>localStorage</code>. The Service Worker caches files for offline use only.</p>
+
+<h2>📝 localStorage Keys</h2>
+<table>
+    <tr><th>Key</th><th>Content</th></tr>
+    <tr><td><code>packinglist_lang</code></td><td>Selected language (fr/en)</td></tr>
+    <tr><td><code>packinglist_profiles</code></td><td>Saved participant profiles</td></tr>
+    <tr><td><code>packinglist_last_profile</code></td><td>Last loaded profile</td></tr>
+    <tr><td><code>packinglist_checks</code></td><td>Checked item states</td></tr>
+    <tr><td><code>packinglist_trips</code></td><td>Saved full trips</td></tr>
+    <tr><td><code>packinglist_listconfig</code></td><td>List configuration (removals, quantities)</td></tr>
+</table>
+
+</div>
+
+<script>
+function showLang(lang) {
+    document.getElementById('sectionFR').classList.toggle('hidden', lang !== 'fr');
+    document.getElementById('sectionEN').classList.toggle('hidden', lang !== 'en');
+    document.getElementById('btnFR').classList.toggle('active', lang === 'fr');
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+}
+</script>
+</body>
+</html>

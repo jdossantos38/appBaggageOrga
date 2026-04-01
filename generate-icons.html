@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<h2>Click each button, then right-click the image → Save As</h2>
+<p>Save them in the same folder as index.html</p>
+<hr>
+<button onclick="gen(192, 'icon-192.png', 30, false)">Generate icon-192.png</button>
+<button onclick="gen(512, 'icon-512.png', 80, false)">Generate icon-512.png</button>
+<button onclick="gen(512, 'icon-maskable-512.png', 80, true)">Generate icon-maskable-512.png</button>
+<br><br>
+<canvas id="c" style="border:1px solid #ccc"></canvas>
+<br>
+<img id="result" style="border:1px solid #ccc; max-width:256px">
+<p id="info"></p>
+
+<script>
+function gen(size, filename, radius, maskable) {
+    const c = document.getElementById('c');
+    c.width = size;
+    c.height = size;
+    const ctx = c.getContext('2d');
+
+    // Background
+    if (maskable) {
+        // Maskable: fill entire square, icon centered in safe zone (80% center)
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(0, 0, size, size);
+    } else {
+        // Rounded rect
+        ctx.clearRect(0, 0, size, size);
+        ctx.beginPath();
+        const r = size * radius / 512;
+        ctx.moveTo(r, 0);
+        ctx.lineTo(size - r, 0);
+        ctx.quadraticCurveTo(size, 0, size, r);
+        ctx.lineTo(size, size - r);
+        ctx.quadraticCurveTo(size, size, size - r, size);
+        ctx.lineTo(r, size);
+        ctx.quadraticCurveTo(0, size, 0, size - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fillStyle = '#2563eb';
+        ctx.fill();
+    }
+
+    // Emoji
+    const fontSize = maskable ? size * 0.45 : size * 0.55;
+    ctx.font = fontSize + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🧳', size / 2, size / 2 + size * 0.03);
+
+    // Show result
+    const dataUrl = c.toDataURL('image/png');
+    const img = document.getElementById('result');
+    img.src = dataUrl;
+    document.getElementById('info').innerHTML =
+        `<strong>${filename}</strong> (${size}×${size}) — Right-click the image above → "Save image as…" → name it <code>${filename}</code>`;
+}
+</script>
+</body>
+</html>

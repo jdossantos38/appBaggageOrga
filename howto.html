@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide d'utilisation — Trip Packing List / Liste de Bagages</title>
+    <style>
+        @media print {
+            body { font-size: 11pt; }
+            .lang-toggle { display: none !important; }
+            .section-fr, .section-en { display: block !important; }
+            .section-en { page-break-before: always; }
+            .step { break-inside: avoid; }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.7;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .lang-toggle {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0.75rem 0;
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 1.5rem;
+        }
+        .lang-toggle button {
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #2563eb;
+            background: #fff;
+            color: #2563eb;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 0.25rem;
+            transition: all 0.2s;
+        }
+        .lang-toggle button.active {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.4rem;
+            color: #1d4ed8;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.3rem;
+        }
+        p { margin-bottom: 0.7rem; }
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.7rem;
+        }
+        li { margin-bottom: 0.4rem; }
+
+        .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+        .step {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-right: 0.6rem;
+            flex-shrink: 0;
+        }
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.6rem;
+        }
+        .step p, .step ul, .step ol {
+            margin-left: 0;
+            padding-left: 2.6rem;
+        }
+        .step ul, .step ol {
+            padding-left: 4rem;
+        }
+
+        .key {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 0.1rem 0.45rem;
+            font-size: 0.85em;
+            font-weight: 600;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .tip {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 0.75rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 0.8rem 0;
+            font-size: 0.95rem;
+        }
+        .tip-icon { margin-right: 0.4rem; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="lang-toggle">
+    <button id="btnFR" class="active" onclick="showLang('fr')">🇫🇷 Français</button>
+    <button id="btnEN" onclick="showLang('en')">🇬🇧 English</button>
+    <button onclick="window.print()" style="margin-left:1rem; background:#f1f5f9; border-color:#94a3b8; color:#475569;">🖨️ PDF / Print</button>
+</div>
+
+<!-- ═══════════════════════════════════════ FRENCH ═══════════════════════════════════════ -->
+<div class="section-fr" id="sectionFR">
+
+<h1>📘 Guide d'utilisation</h1>
+<p class="subtitle">Liste de Bagages — Comment utiliser l'application pas à pas</p>
+
+<!-- STEP 1 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Ouvrir l'application</div>
+    <p>Ouvrez <strong>index.html</strong> dans votre navigateur, ou accédez à l'adresse de votre serveur local :</p>
+    <ul>
+        <li>Sur PC : <code>http://localhost:8080</code></li>
+        <li>Sur mobile (même réseau Wi-Fi) : <code>http://[IP-du-PC]:8080</code></li>
+    </ul>
+    <div class="tip"><span class="tip-icon">💡</span> Pour installer l'app sur votre téléphone, utilisez « Ajouter à l'écran d'accueil » (iOS) ou « Installer » (Android).</div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Choisir la langue</div>
+    <p>Cliquez sur le bouton <span class="key">🌐 FR / EN</span> en haut de la page pour basculer entre français et anglais. Le choix est enregistré automatiquement.</p>
+</div>
+
+<!-- STEP 3 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Configurer le voyage</div>
+    <p>Remplissez le formulaire :</p>
+    <ol>
+        <li><strong>Nombre de voyageurs</strong> — les champs nom/âge apparaîtront automatiquement</li>
+        <li><strong>Nom et âge</strong> de chaque participant (les objets s'adaptent à l'âge : bébé 0-2, enfant 3-11, ado 12-17, adulte 18+)</li>
+        <li><strong>Saison</strong> — été, hiver, printemps, automne</li>
+        <li><strong>Destination</strong> — plage, montagne, ville, camping, road-trip</li>
+        <li><strong>Transport</strong> — voiture, avion, train, bus</li>
+        <li><strong>Hébergement</strong> — hôtel, Airbnb, camping, chez des amis</li>
+        <li><strong>Nombre de jours</strong></li>
+        <li><strong>Activités</strong> — cocher si applicable : randonnée, ski, baignade, fête</li>
+    </ol>
+</div>
+
+<!-- STEP 4 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Sauvegarder les participants (optionnel)</div>
+    <p>Dans la barre <strong>« Profil participants »</strong> :</p>
+    <ul>
+        <li>Tapez un nom de profil et cliquez <span class="key">💾</span> pour sauvegarder les noms et âges</li>
+        <li>Sélectionnez un profil existant et cliquez <span class="key">📂</span> pour le charger</li>
+        <li>Cliquez <span class="key">🗑️</span> pour supprimer le profil sélectionné</li>
+    </ul>
+</div>
+
+<!-- STEP 5 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Sauvegarder un voyage complet (optionnel)</div>
+    <p>Dans la barre <strong>« Sauvegarder / Charger voyage »</strong> :</p>
+    <ul>
+        <li>Tapez un nom et cliquez <span class="key">💾</span> — sauvegarde TOUT le formulaire (saison, destination, transport, hébergement, jours, activités, participants)</li>
+        <li>Sélectionnez un voyage et cliquez <span class="key">📂</span> pour tout recharger d'un coup</li>
+        <li>Cliquez <span class="key">🗑️</span> pour supprimer un voyage</li>
+    </ul>
+    <div class="tip"><span class="tip-icon">💡</span> Les profils sauvent uniquement les participants. Les voyages sauvent la totalité du formulaire.</div>
+</div>
+
+<!-- STEP 6 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">6</span> Générer la liste</div>
+    <p>Cliquez sur le bouton <strong>« Générer la liste »</strong>. La liste apparaît avec :</p>
+    <ul>
+        <li>Des <strong>onglets</strong> : « Commun » + un onglet par participant</li>
+        <li>Des <strong>catégories</strong> (vêtements, toilette, tech, documents…)</li>
+        <li>Chaque objet avec une <strong>case à cocher</strong>, un nom, le poids estimé et la quantité</li>
+    </ul>
+</div>
+
+<!-- STEP 7 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">7</span> Cocher les objets</div>
+    <p>Cochez chaque objet au fur et à mesure que vous le mettez dans votre valise. La barre de progression se met à jour en temps réel.</p>
+    <div class="tip"><span class="tip-icon">💡</span> La progression est enregistrée automatiquement. Vous pouvez fermer et revenir plus tard — tout sera conservé.</div>
+</div>
+
+<!-- STEP 8 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">8</span> Personnaliser la liste</div>
+    <ul>
+        <li><span class="key">−</span> / <span class="key">+</span> — Diminuer ou augmenter la quantité d'un objet</li>
+        <li><span class="key">×</span> — Supprimer un objet de la liste</li>
+        <li><span class="key">⠿</span> — Glisser-déposer pour réordonner les objets dans une catégorie</li>
+        <li><strong>« Ajouter un objet… »</strong> — en bas de chaque catégorie, tapez un nom et appuyez Entrée ou cliquez + pour ajouter un objet personnalisé</li>
+    </ul>
+</div>
+
+<!-- STEP 9 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">9</span> Sauvegarder la configuration de la liste</div>
+    <p>Après avoir supprimé des objets ou modifié des quantités, cliquez sur le bouton vert <strong>« Sauvegarder la configuration »</strong> pour mémoriser ces changements.</p>
+    <p>La prochaine fois que vous générerez une liste, ces modifications seront appliquées automatiquement.</p>
+    <p>Cliquez <strong>« Réinitialiser »</strong> pour revenir aux quantités et objets par défaut.</p>
+</div>
+
+<!-- STEP 10 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">10</span> Vérifier le poids</div>
+    <p>Une barre jaune affiche le <strong>poids total estimé</strong> de vos bagages.</p>
+    <p>Si vous voyagez en <strong>avion</strong> et dépassez 10 kg, un avertissement rouge apparaît pour vous alerter sur la limite cabine.</p>
+</div>
+
+<!-- STEP 11 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">11</span> Exporter ou imprimer</div>
+    <ul>
+        <li><strong>Copier</strong> — copie la liste complète en texte dans votre presse-papier (✅ coché / ⬜ non coché). Idéal pour envoyer par message.</li>
+        <li><strong>Imprimer</strong> — ouvre le dialogue d'impression du navigateur. Toutes les sections sont affichées pour une impression complète. Vous pouvez aussi choisir « Enregistrer en PDF ».</li>
+    </ul>
+</div>
+
+<!-- STEP 12 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">12</span> Besoin d'aide ?</div>
+    <p>Cliquez sur le bouton <span class="key">?</span> flottant en bas à gauche de l'écran pour afficher l'aide intégrée avec un résumé de toutes les fonctionnalités.</p>
+</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ ENGLISH ═══════════════════════════════════════ -->
+<div class="section-en hidden" id="sectionEN">
+
+<h1>📘 How-to Guide</h1>
+<p class="subtitle">Trip Packing List — Step-by-step usage guide</p>
+
+<!-- STEP 1 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">1</span> Open the App</div>
+    <p>Open <strong>index.html</strong> in your browser, or navigate to your local server address:</p>
+    <ul>
+        <li>On PC: <code>http://localhost:8080</code></li>
+        <li>On mobile (same Wi-Fi): <code>http://[PC-IP]:8080</code></li>
+    </ul>
+    <div class="tip"><span class="tip-icon">💡</span> To install as a phone app, use "Add to Home Screen" (iOS) or "Install" (Android).</div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">2</span> Choose Language</div>
+    <p>Click the <span class="key">🌐 FR / EN</span> button at the top to switch between French and English. Your choice is saved automatically.</p>
+</div>
+
+<!-- STEP 3 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">3</span> Configure the Trip</div>
+    <p>Fill in the form:</p>
+    <ol>
+        <li><strong>Number of travelers</strong> — name/age fields appear automatically</li>
+        <li><strong>Name and age</strong> of each participant (items adapt to age: baby 0-2, child 3-11, teen 12-17, adult 18+)</li>
+        <li><strong>Season</strong> — summer, winter, spring, fall</li>
+        <li><strong>Destination</strong> — beach, mountain, city, camping, road-trip</li>
+        <li><strong>Transport</strong> — car, plane, train, bus</li>
+        <li><strong>Accommodation</strong> — hotel, Airbnb, camping, friends' place</li>
+        <li><strong>Number of days</strong></li>
+        <li><strong>Activities</strong> — check if applicable: hiking, skiing, swimming, party</li>
+    </ol>
+</div>
+
+<!-- STEP 4 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">4</span> Save Participants (Optional)</div>
+    <p>In the <strong>"Participant Profile"</strong> bar:</p>
+    <ul>
+        <li>Type a profile name and click <span class="key">💾</span> to save names and ages</li>
+        <li>Select an existing profile and click <span class="key">📂</span> to load it</li>
+        <li>Click <span class="key">🗑️</span> to delete the selected profile</li>
+    </ul>
+</div>
+
+<!-- STEP 5 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">5</span> Save a Full Trip (Optional)</div>
+    <p>In the <strong>"Save / Load Trip"</strong> bar:</p>
+    <ul>
+        <li>Type a name and click <span class="key">💾</span> — saves the ENTIRE form (season, destination, transport, accommodation, days, activities, participants)</li>
+        <li>Select a trip and click <span class="key">📂</span> to reload everything at once</li>
+        <li>Click <span class="key">🗑️</span> to delete a trip</li>
+    </ul>
+    <div class="tip"><span class="tip-icon">💡</span> Profiles save only participants. Trips save the complete form.</div>
+</div>
+
+<!-- STEP 6 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">6</span> Generate the List</div>
+    <p>Click the <strong>"Generate list"</strong> button. The list appears with:</p>
+    <ul>
+        <li><strong>Tabs</strong>: "Shared" + one tab per participant</li>
+        <li><strong>Categories</strong> (clothing, toiletries, tech, documents…)</li>
+        <li>Each item with a <strong>checkbox</strong>, name, estimated weight, and quantity</li>
+    </ul>
+</div>
+
+<!-- STEP 7 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">7</span> Check Off Items</div>
+    <p>Check each item as you put it in your suitcase. The progress bar updates in real time.</p>
+    <div class="tip"><span class="tip-icon">💡</span> Progress is saved automatically. You can close the page and come back later — everything will be preserved.</div>
+</div>
+
+<!-- STEP 8 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">8</span> Customize the List</div>
+    <ul>
+        <li><span class="key">−</span> / <span class="key">+</span> — Decrease or increase an item's quantity</li>
+        <li><span class="key">×</span> — Remove an item from the list</li>
+        <li><span class="key">⠿</span> — Drag and drop to reorder items within a category</li>
+        <li><strong>"Add an item…"</strong> — at the bottom of each category, type a name and press Enter or click + to add a custom item</li>
+    </ul>
+</div>
+
+<!-- STEP 9 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">9</span> Save List Configuration</div>
+    <p>After removing items or changing quantities, click the green <strong>"Save configuration"</strong> button to remember these changes.</p>
+    <p>Next time you generate a list, these modifications will be applied automatically.</p>
+    <p>Click <strong>"Reset"</strong> to go back to default quantities and items.</p>
+</div>
+
+<!-- STEP 10 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">10</span> Check Weight</div>
+    <p>A yellow bar shows the <strong>estimated total weight</strong> of your baggage.</p>
+    <p>If traveling by <strong>plane</strong> and exceeding 10 kg, a red warning appears about the cabin limit.</p>
+</div>
+
+<!-- STEP 11 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">11</span> Export or Print</div>
+    <ul>
+        <li><strong>Copy</strong> — copies the full list as text to your clipboard (✅ checked / ⬜ unchecked). Great for sending via messaging apps.</li>
+        <li><strong>Print</strong> — opens the browser print dialog. All sections are displayed for a complete printout. You can also choose "Save as PDF".</li>
+    </ul>
+</div>
+
+<!-- STEP 12 -->
+<div class="step">
+    <div class="step-title"><span class="step-number">12</span> Need Help?</div>
+    <p>Click the floating <span class="key">?</span> button at the bottom-left of the screen to display the built-in help with a summary of all features.</p>
+</div>
+
+</div>
+
+<script>
+function showLang(lang) {
+    document.getElementById('sectionFR').classList.toggle('hidden', lang !== 'fr');
+    document.getElementById('sectionEN').classList.toggle('hidden', lang !== 'en');
+    document.getElementById('btnFR').classList.toggle('active', lang === 'fr');
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+}
+</script>
+</body>
+</html>

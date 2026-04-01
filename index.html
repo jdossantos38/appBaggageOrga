@@ -1,0 +1,3173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Liste de Bagages</title>
+
+    <!-- PWA: iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bagages">
+
+    <!-- PWA: Android / Chrome -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="application-name" content="Bagages">
+
+    <!-- General mobile -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="description" content="Générateur de liste de bagages pour vos voyages — ne rien oublier">
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --accent-summer: #f59e0b;
+            --accent-winter: #3b82f6;
+            --accent-spring: #10b981;
+            --accent-fall: #f97316;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-text-size-adjust: 100%;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        header h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+        header p { opacity: 0.85; font-size: 1.05rem; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* ── Step indicators ── */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .step-indicator.active { opacity: 1; }
+
+        .step-number {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .step-arrow { color: var(--text-light); font-size: 1.2rem; }
+
+        /* ── Form panel ── */
+        .panel {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel h2 {
+            font-size: 1.35rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group label .icon { margin-right: 0.35rem; }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            transition: border-color 0.2s;
+            color: var(--text);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.3rem;
+        }
+
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 400;
+            cursor: pointer;
+            padding: 0.4rem 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .checkbox-group label:hover { border-color: var(--primary); }
+
+        .checkbox-group input[type="checkbox"] { accent-color: var(--primary); }
+
+        .checkbox-group label:has(input:checked) {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover { background: #cbd5e1; }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover { background: #dc2626; }
+
+        .btn-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ── Result panel ── */
+        #resultSection { display: none; }
+
+        .summary-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.35rem 0.75rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .category {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .category-header:hover { filter: brightness(0.95); }
+
+        .category-header .badge {
+            margin-left: auto;
+            background: rgba(0,0,0,0.12);
+            padding: 0.15rem 0.55rem;
+            border-radius: 12px;
+            font-size: 0.82rem;
+        }
+
+        .cat-toiletries .category-header { background: #fce7f3; color: #9d174d; }
+        .cat-clothing .category-header  { background: #dbeafe; color: #1e40af; }
+        .cat-medical .category-header   { background: #dcfce7; color: #166534; }
+        .cat-leisure .category-header   { background: #fef9c3; color: #854d0e; }
+        .cat-documents .category-header { background: #f1f5f9; color: #334155; }
+        .cat-electronics .category-header { background: #e0e7ff; color: #3730a3; }
+        .cat-sleeping .category-header  { background: #ede9fe; color: #5b21b6; }
+        .cat-kitchen .category-header   { background: #ffedd5; color: #9a3412; }
+        .cat-misc .category-header      { background: #f0fdf4; color: #15803d; }
+
+        .item-list {
+            list-style: none;
+            padding: 0.5rem 0 0 0;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        .item-row:last-child { border-bottom: none; }
+        .item-row:hover { background: #f8fafc; }
+
+        .item-row input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+
+        .item-name {
+            flex: 1;
+            font-size: 0.97rem;
+        }
+
+        .item-name.checked {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .item-qty {
+            font-weight: 600;
+            background: #f1f5f9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: var(--text-light);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            background: var(--border);
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            border-radius: 8px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* ── Participant inputs ── */
+        .participants-container {
+            margin-top: 1rem;
+        }
+
+        .participant-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .participant-row .p-number {
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 24px;
+        }
+
+        .participant-row input[type="text"],
+        .participant-row input[type="number"] {
+            padding: 0.5rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .participant-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .participant-row input[type="text"] { flex: 1; min-width: 140px; }
+        .participant-row input[type="number"] { width: 80px; }
+        .participant-row .p-label { font-size: 0.85rem; color: var(--text-light); }
+
+        .age-hint {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            padding: 0.15rem 0.5rem;
+            background: #eff6ff;
+            border-radius: 10px;
+        }
+
+        /* ── Person tabs in results ── */
+        .person-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .person-tab {
+            padding: 0.5rem 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .person-tab:hover { border-color: var(--primary); }
+
+        .person-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .person-tab .tab-age {
+            font-weight: 400;
+            font-size: 0.82rem;
+            opacity: 0.8;
+        }
+
+        .person-list-section {
+            display: none;
+        }
+
+        .person-list-section.active {
+            display: block;
+        }
+
+        .person-section-header {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .person-section-header .age-badge {
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        /* ── Print styles ── */
+        @media print {
+            header { background: white !important; color: black !important; box-shadow: none; }
+            .btn-row, .steps, #formSection { display: none !important; }
+            #resultSection { display: block !important; }
+            .panel { box-shadow: none; border: 1px solid #ccc; }
+            .item-row:hover { background: none; }
+            body { background: white; }
+            .person-tabs { display: none !important; }
+            .person-list-section { display: block !important; page-break-inside: avoid; }
+            .person-section-header { break-after: avoid; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.5rem; }
+            header p { font-size: 0.92rem; }
+            .steps { flex-direction: column; align-items: center; gap: 0.5rem; }
+            .step-arrow { display: none; }
+            .profile-bar { flex-direction: column; align-items: stretch; }
+            .profile-bar select, .profile-bar input { min-width: 0; width: 100%; }
+            .profile-bar .btn-sm { justify-content: center; }
+            .container { padding: 1rem 0.5rem; }
+            .panel { padding: 1.25rem; border-radius: 10px; }
+            .panel h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+
+            /* Touch-friendly inputs */
+            select, input[type="number"], input[type="text"] {
+                font-size: 16px !important; /* prevents iOS zoom on focus */
+                padding: 0.7rem 0.85rem;
+                min-height: 44px;
+            }
+
+            /* Touch-friendly buttons */
+            .btn {
+                min-height: 48px;
+                padding: 0.85rem 1.5rem;
+                font-size: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-row {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn-sm {
+                min-height: 40px;
+                font-size: 0.9rem;
+                padding: 0.5rem 0.85rem;
+            }
+
+            /* Tabs: horizontal scroll on small screens */
+            .person-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.5rem;
+                scrollbar-width: none;
+            }
+            .person-tabs::-webkit-scrollbar { display: none; }
+            .person-tab {
+                flex-shrink: 0;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+
+            /* Touch-friendly checkboxes */
+            .item-row {
+                padding: 0.7rem 0.75rem;
+                gap: 0.6rem;
+            }
+            .item-row input[type="checkbox"] {
+                width: 22px; height: 22px;
+                min-width: 22px;
+            }
+            .item-name { font-size: 0.95rem; }
+
+            /* Participant rows */
+            .participant-row {
+                padding: 0.65rem 0.75rem;
+                gap: 0.5rem;
+            }
+            .participant-row input[type="text"] { min-width: 0; flex: 1; }
+            .participant-row input[type="number"] { width: 65px; }
+
+            /* Add item row */
+            .add-item-row {
+                flex-wrap: wrap;
+                padding: 0.5rem 0.75rem;
+                gap: 0.4rem;
+            }
+            .add-item-row input[type="text"] { flex: 1; min-width: 120px; min-height: 40px; font-size: 16px !important; }
+            .add-item-row input[type="number"] { width: 55px; min-height: 40px; font-size: 16px !important; }
+            .btn-add-item { min-height: 40px; padding: 0.45rem 0.8rem; }
+
+            /* Category header touch target */
+            .category-header {
+                min-height: 48px;
+                padding: 0.7rem 0.85rem;
+            }
+
+            /* Checkbox group (activities) */
+            .checkbox-group label {
+                min-height: 44px;
+                padding: 0.5rem 0.85rem;
+                font-size: 0.95rem;
+            }
+
+            /* Summary tags wrap better */
+            .summary-bar { gap: 0.5rem; }
+            .summary-tag { font-size: 0.82rem; }
+
+            /* Progress */
+            .progress-bar-container { height: 8px; }
+        }
+
+        /* Extra small (iPhone SE, etc) */
+        @media (max-width: 380px) {
+            header { padding: 1.25rem 0.75rem; }
+            header h1 { font-size: 1.3rem; }
+            .panel { padding: 1rem 0.75rem; }
+            .participant-row { flex-direction: column; align-items: stretch; }
+            .participant-row .p-number { align-self: flex-start; }
+        }
+
+        /* ── Profile management ── */
+        .profile-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-bar select {
+            padding: 0.45rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            min-width: 180px;
+        }
+
+        .profile-bar select:focus { outline: none; border-color: var(--primary); }
+
+        .profile-bar input[type="text"] {
+            padding: 0.45rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .profile-bar input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+        .btn-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sm-primary { background: var(--primary); color: white; }
+        .btn-sm-primary:hover { background: var(--primary-dark); }
+        .btn-sm-success { background: var(--success); color: white; }
+        .btn-sm-success:hover { background: #16a34a; }
+        .btn-sm-danger { background: var(--danger); color: white; }
+        .btn-sm-danger:hover { background: #dc2626; }
+        .btn-sm-secondary { background: var(--border); color: var(--text); }
+        .btn-sm-secondary:hover { background: #cbd5e1; }
+
+        .profile-toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.92rem;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .profile-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .profile-toast.success { background: var(--success); }
+        .profile-toast.info { background: var(--primary); }
+        .profile-toast.error { background: var(--danger); }
+
+        /* ── Add item row ── */
+        .add-item-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 1rem;
+            border-top: 1px dashed var(--border);
+            margin-top: 0.25rem;
+        }
+
+        .add-item-row input[type="text"] {
+            flex: 1;
+            padding: 0.4rem 0.6rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            min-width: 100px;
+        }
+
+        .add-item-row input[type="number"] {
+            width: 60px;
+            padding: 0.4rem 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .add-item-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-add-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.35rem 0.7rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--success);
+            color: white;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-add-item:hover { background: #16a34a; }
+
+        .btn-remove-item {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+
+        .btn-remove-item:hover { background: #fee2e2; }
+
+        @media print {
+            .add-item-row { display: none !important; }
+            .btn-remove-item { display: none !important; }
+        }
+
+        /* ── Language selection overlay ── */
+        .lang-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: linear-gradient(135deg, #1e3a5f, #2563eb);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            transition: opacity 0.4s;
+        }
+
+        .lang-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .lang-overlay h2 {
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .lang-overlay p {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+        }
+
+        .lang-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .lang-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem 2.5rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 160px;
+        }
+
+        .lang-btn:hover, .lang-btn:focus {
+            background: rgba(255,255,255,0.25);
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        .lang-btn .flag {
+            font-size: 3rem;
+        }
+
+        .lang-switch {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+            margin-top: 0.25rem;
+        }
+
+        .lang-switch:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        /* ── Weight info ── */
+        .weight-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: #fef9c3;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            align-items: center;
+        }
+
+        .weight-bar .weight-total {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #92400e;
+        }
+
+        .weight-bar .weight-detail {
+            color: #78350f;
+            font-size: 0.85rem;
+        }
+
+        .weight-bar .weight-warning {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .item-weight {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        /* ── Export button ── */
+        .btn-export {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #6d28d9;
+        }
+
+        /* ── Trip save bar ── */
+        .trip-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+            padding: 0.75rem 1rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+        }
+
+        .trip-bar select {
+            padding: 0.45rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            min-width: 180px;
+        }
+
+        .trip-bar select:focus { outline: none; border-color: var(--primary); }
+
+        .trip-bar input[type="text"] {
+            padding: 0.45rem 0.7rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .trip-bar input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+        .trip-bar-label {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--primary-dark);
+        }
+
+        /* ── Drag & drop ── */
+        .item-row.dragging {
+            opacity: 0.4;
+            background: #e0e7ff;
+        }
+
+        .item-row .drag-handle {
+            cursor: grab;
+            color: var(--text-light);
+            font-size: 1rem;
+            user-select: none;
+            touch-action: none;
+            padding: 0.2rem;
+            line-height: 1;
+        }
+
+        .item-row .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .item-list .drag-over {
+            border-top: 2px solid var(--primary);
+        }
+
+        @media (max-width: 640px) {
+            .trip-bar { flex-direction: column; align-items: stretch; }
+            .trip-bar select, .trip-bar input { min-width: 0; width: 100%; }
+            .weight-bar { flex-direction: column; gap: 0.4rem; }
+        }
+
+        @media print {
+            .trip-bar { display: none !important; }
+            .drag-handle { display: none !important; }
+            .weight-bar { border: 1px solid #ccc; background: #fffef0; }
+            .btn-remove-item { display: none !important; }
+            .qty-btn { display: none !important; }
+            .config-bar { display: none !important; }
+        }
+
+        /* ── Qty +/- controls ── */
+        .qty-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .qty-btn {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: var(--text);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+            transition: all 0.15s;
+        }
+
+        .qty-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ── Config save bar ── */
+        .config-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 1rem;
+            margin-bottom: 1rem;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .config-bar .btn {
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .config-info {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        /* ── Help bubble ── */
+        .help-fab {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .help-fab:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+
+        .help-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 950;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .help-overlay.show {
+            display: flex;
+        }
+
+        .help-panel {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .help-panel h2 {
+            font-size: 1.4rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .help-panel h3 {
+            font-size: 1.05rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+
+        .help-panel p, .help-panel li {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .help-panel ul {
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-panel li {
+            margin-bottom: 0.3rem;
+        }
+
+        .help-panel .help-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            line-height: 1;
+            padding: 0.25rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .help-panel .help-close:hover {
+            background: #f1f5f9;
+        }
+
+        .help-shortcut {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.82rem;
+            font-family: monospace;
+            color: var(--text);
+        }
+
+        @media print {
+            .help-fab { display: none !important; }
+            .help-overlay { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="langOverlay" class="lang-overlay">
+    <h2>🧳</h2>
+    <p>Choose your language / Choisissez votre langue</p>
+    <div class="lang-buttons">
+        <button class="lang-btn" onclick="chooseLang('fr')">
+            <span class="flag">🇫🇷</span>
+            Français
+        </button>
+        <button class="lang-btn" onclick="chooseLang('en')">
+            <span class="flag">🇬🇧</span>
+            English
+        </button>
+    </div>
+</div>
+
+<header>
+    <h1 id="mainTitle">🧳 Générateur de Liste de Bagages</h1>
+    <p id="mainSubtitle">N'oubliez plus rien — préparez vos valises en quelques secondes</p>
+    <button class="lang-switch" onclick="showLangOverlay()" id="langSwitchBtn" title="Change language">🌐 FR / EN</button>
+</header>
+
+<div class="container">
+
+    <!-- Step indicators -->
+    <div class="steps">
+        <div class="step-indicator active" id="stepInd1">
+            <span class="step-number">1</span> <span id="stepLabel1">Configurer le voyage</span>
+        </div>
+        <span class="step-arrow">→</span>
+        <div class="step-indicator" id="stepInd2">
+            <span class="step-number">2</span> <span id="stepLabel2">Votre liste de bagages</span>
+        </div>
+    </div>
+
+    <!-- ════════════ FORM SECTION ════════════ -->
+    <section id="formSection">
+        <div class="panel">
+            <h2 id="formTitle">⚙️ Détails du voyage</h2>
+            <div class="form-grid">
+
+                <!-- Number of persons -->
+                <div class="form-group">
+                    <label><span class="icon">👥</span> <span data-i18n="nbPersons">Nombre de personnes</span></label>
+                    <input type="number" id="nbPersons" min="1" max="20" value="2" onchange="buildParticipantFields()" oninput="buildParticipantFields()">
+                </div>
+
+                <!-- Season -->
+                <div class="form-group">
+                    <label><span class="icon">🌦️</span> <span data-i18n="season">Saison</span></label>
+                    <select id="season">
+                        <option value="summer" data-i18n-opt="summer">☀️ Été</option>
+                        <option value="spring" data-i18n-opt="spring">🌸 Printemps</option>
+                        <option value="fall" data-i18n-opt="fall">🍂 Automne</option>
+                        <option value="winter" data-i18n-opt="winter">❄️ Hiver</option>
+                    </select>
+                </div>
+
+                <!-- Destination -->
+                <div class="form-group">
+                    <label><span class="icon">📍</span> <span data-i18n="destination">Destination</span></label>
+                    <select id="destination">
+                        <option value="france" data-i18n-opt="france">🇫🇷 France</option>
+                        <option value="abroad" data-i18n-opt="abroad">✈️ Étranger</option>
+                    </select>
+                </div>
+
+                <!-- Transport -->
+                <div class="form-group">
+                    <label><span class="icon">🚗</span> <span data-i18n="transport">Transport</span></label>
+                    <select id="transport">
+                        <option value="car" data-i18n-opt="car">🚗 Voiture</option>
+                        <option value="train" data-i18n-opt="train">🚆 Train</option>
+                        <option value="flight" data-i18n-opt="flight">✈️ Avion</option>
+                    </select>
+                </div>
+
+                <!-- Accommodation -->
+                <div class="form-group">
+                    <label><span class="icon">🏕️</span> <span data-i18n="accommodation">Hébergement</span></label>
+                    <select id="accommodation">
+                        <option value="family" data-i18n-opt="family">👨‍👩‍👧 Famille / Location</option>
+                        <option value="hostel" data-i18n-opt="hostel">🏨 Hôtel / Auberge</option>
+                        <option value="camp" data-i18n-opt="camp">⛺ Camping</option>
+                    </select>
+                </div>
+
+                <!-- Number of days -->
+                <div class="form-group">
+                    <label><span class="icon">📅</span> <span data-i18n="nbDays">Nombre de jours</span></label>
+                    <input type="number" id="nbDays" min="1" max="60" value="7">
+                </div>
+
+                <!-- Participants -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label><span class="icon">🧑‍🤝‍🧑</span> <span data-i18n="participants">Participants</span></label>
+                    <div class="profile-bar" id="profileBar">
+                        <select id="profileSelect" onchange="onProfileSelect()">
+                            <option value="">— Choisir un profil —</option>
+                        </select>
+                        <button class="btn-sm btn-sm-primary" onclick="loadSelectedProfile()" title="Charger" id="btnLoadProfile">📂 <span data-i18n="load">Charger</span></button>
+                        <input type="text" id="profileNameInput" placeholder="Nom du profil…">
+                        <button class="btn-sm btn-sm-success" onclick="saveCurrentProfile()" title="Sauvegarder" id="btnSaveProfile">💾 <span data-i18n="save">Sauvegarder</span></button>
+                        <button class="btn-sm btn-sm-danger" onclick="deleteSelectedProfile()" title="Supprimer" id="btnDeleteProfile">🗑️ <span data-i18n="delete">Supprimer</span></button>
+                    </div>
+                    <div class="participants-container" id="participantsContainer"></div>
+                </div>
+
+                <!-- Activities -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label><span class="icon">🎯</span> <span data-i18n="activities">Activités spéciales</span></label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="walking"> <span data-i18n-opt="walking">🥾 Randonnée / Marche</span></label>
+                        <label><input type="checkbox" value="skiing"> <span data-i18n-opt="skiing">⛷️ Ski</span></label>
+                        <label><input type="checkbox" value="celebration"> <span data-i18n-opt="celebration">🎉 Fête / Célébration</span></label>
+                        <label><input type="checkbox" value="swimming"> <span data-i18n-opt="swimming">🏊 Baignade / Plage</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="generateList()" id="btnGenerate">🧳 Générer la liste</button>
+            </div>
+
+            <!-- Trip save bar -->
+            <div class="trip-bar" id="tripBar">
+                <span class="trip-bar-label" id="tripBarLabel">🗺️</span>
+                <select id="tripSelect" onchange="onTripSelect()">
+                    <option value="">—</option>
+                </select>
+                <button class="btn-sm btn-sm-primary" onclick="loadSelectedTrip()" id="btnLoadTrip">📂</button>
+                <input type="text" id="tripNameInput" placeholder="">
+                <button class="btn-sm btn-sm-success" onclick="saveCurrentTrip()" id="btnSaveTrip">💾</button>
+                <button class="btn-sm btn-sm-danger" onclick="deleteSelectedTrip()" id="btnDeleteTrip">🗑️</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════ RESULT SECTION ════════════ -->
+    <section id="resultSection">
+        <div class="panel">
+            <h2 id="resultTitle">📋 Votre liste de bagages</h2>
+
+            <div id="summaryBar" class="summary-bar"></div>
+
+            <div id="weightBar" class="weight-bar" style="display:none;"></div>
+
+            <div id="configBar" class="config-bar">
+                <button class="btn btn-sm-success btn" onclick="saveListConfig()" id="btnSaveConfig">💾</button>
+                <button class="btn btn-sm-secondary btn" onclick="resetListConfig()" id="btnResetConfig">↺</button>
+                <span class="config-info" id="configInfo"></span>
+            </div>
+
+            <div class="progress-text"><span id="progressText">0 / 0 objets préparés</span></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div id="personTabs" class="person-tabs"></div>
+            <div id="listContainer"></div>
+
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goBack()" id="btnBack">← Modifier le voyage</button>
+                <button class="btn btn-export" onclick="exportList()" id="btnExport">📋 Copier</button>
+                <button class="btn btn-primary" onclick="window.print()" id="btnPrint">🖨️ Imprimer</button>
+                <button class="btn btn-danger" onclick="resetChecks()" id="btnReset">↺ Tout décocher</button>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Help bubble -->
+<button class="help-fab" onclick="toggleHelp()" title="Help / Aide" id="helpFab">?</button>
+
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)toggleHelp()">
+    <div class="help-panel" id="helpPanel">
+        <!-- Content set by JS based on language -->
+    </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  LANGUAGE / INTERNATIONALIZATION
+// ─────────────────────────────────────────────
+
+const LANG_KEY = 'packinglist_lang';
+let currentLang = localStorage.getItem(LANG_KEY) || '';
+
+// French → English translation map
+const EN = {
+    // ── Item names ──
+    // Toiletries
+    "Brosse à dents": "Toothbrush",
+    "Dentifrice": "Toothpaste",
+    "Savon / Gel douche": "Soap / Shower gel",
+    "Shampoing": "Shampoo",
+    "Déodorant": "Deodorant",
+    "Brosse / Peigne": "Brush / Comb",
+    "Rasoir": "Razor",
+    "Crème solaire (SPF 50)": "Sunscreen (SPF 50)",
+    "Après-soleil": "After-sun lotion",
+    "Baume à lèvres": "Lip balm",
+    "Répulsif anti-insectes": "Insect repellent",
+    "Serviette (grande)": "Towel (large)",
+    "Serviette (petite)": "Towel (small)",
+    "Papier toilette": "Toilet paper",
+    "Gel hydroalcoolique": "Hand sanitizer",
+    "Mouchoirs": "Tissues",
+    "Miroir (poche)": "Mirror (pocket)",
+    "Trousse de maquillage": "Makeup bag",
+    "Couches (paquet)": "Diapers (pack)",
+    "Lingettes bébé": "Baby wipes",
+    "Shampoing / Gel lavant bébé": "Baby shampoo / Body wash",
+    "Crème pour le change": "Diaper cream",
+    "Crème solaire bébé": "Baby sunscreen",
+
+    // Clothing
+    "Sous-vêtements": "Underwear",
+    "Chaussettes (paires)": "Socks (pairs)",
+    "Pyjama": "Pajamas",
+    "Bodys / Grenouillères": "Onesies / Bodysuits",
+    "Bavoirs": "Bibs",
+    "Bonnet bébé": "Baby hat",
+    "Moufles / Chaussons bébé": "Baby mittens / Booties",
+    "Tenues de rechange bébé": "Baby change outfits",
+    "T-shirts": "T-shirts",
+    "Shorts": "Shorts",
+    "Robe légère / Jupe": "Light dress / Skirt",
+    "Maillot de bain": "Swimsuit",
+    "Couche de bain": "Swim diaper",
+    "Sandales / Tongs": "Sandals / Flip-flops",
+    "Lunettes de soleil": "Sunglasses",
+    "Chapeau / Casquette": "Hat / Cap",
+    "Veste chaude / Manteau": "Warm jacket / Coat",
+    "Pulls": "Sweaters",
+    "Pantalons longs / Jeans": "Long pants / Jeans",
+    "Sous-vêtements thermiques": "Thermal underwear",
+    "Gants chauds": "Warm gloves",
+    "Écharpe": "Scarf",
+    "Bonnet chaud": "Warm beanie",
+    "Chaussettes chaudes (laine)": "Warm socks (wool)",
+    "Bottes (chaudes / imperméables)": "Boots (warm / waterproof)",
+    "Veste légère / Coupe-vent": "Light jacket / Windbreaker",
+    "Veste de pluie / Poncho": "Rain jacket / Poncho",
+    "Chaussures de randonnée": "Hiking shoes",
+    "Pantalon de randonnée": "Hiking pants",
+    "T-shirts respirants": "Breathable T-shirts",
+    "Guêtres": "Gaiters",
+    "Veste de ski": "Ski jacket",
+    "Pantalon de ski": "Ski pants",
+    "Gants de ski": "Ski gloves",
+    "Masque de ski": "Ski goggles",
+    "Chaussettes de ski (épaisses)": "Ski socks (thick)",
+    "Tour de cou / Cagoule": "Neck gaiter / Balaclava",
+    "Casque (ou location sur place)": "Helmet (or rent on site)",
+    "Tenue de soirée": "Evening wear",
+    "Chaussures habillées": "Dress shoes",
+    "Chaussures de marche confortables": "Comfortable walking shoes",
+
+    // Medical
+    "Trousse de premiers secours": "First aid kit",
+    "Médicaments personnels": "Personal medications",
+    "Antidouleurs (paracétamol / ibuprofène)": "Painkillers (paracetamol / ibuprofen)",
+    "Antidouleur enfant (sirop)": "Children's painkiller (syrup)",
+    "Pansements (assortis)": "Band-aids (assorted)",
+    "Désinfectant": "Disinfectant",
+    "Bande élastique": "Elastic bandage",
+    "Pince à épiler": "Tweezers",
+    "Thermomètre": "Thermometer",
+    "Anti-diarrhéique": "Anti-diarrheal",
+    "Sels de réhydratation": "Rehydration salts",
+    "Médicament anti-mal des transports": "Motion sickness medicine",
+    "Pansements ampoules": "Blister plasters",
+    "Gel anti-douleur musculaire": "Muscle pain relief gel",
+    "Antihistaminiques (allergies)": "Antihistamines (allergies)",
+    "Crème après coup de soleil": "Sunburn cream",
+    "Antipyrétique bébé (dose nourrisson)": "Baby fever reducer (infant dose)",
+    "Sérum physiologique (bébé)": "Saline solution (baby)",
+
+    // Leisure
+    "Livres / Liseuse": "Books / E-reader",
+    "Cahier de coloriage + crayons": "Coloring book + crayons",
+    "Jouet préféré / Doudou": "Favorite toy / Comfort toy",
+    "Porte-bébé / Écharpe": "Baby carrier / Sling",
+    "Poussette (compacte / voyage)": "Stroller (compact / travel)",
+    "Tétine (+ rechange)": "Pacifier (+ spare)",
+    "Jeux de cartes / Jeux de société": "Card games / Board games",
+    "Carnet + stylo": "Notebook + pen",
+    "Bâtons de marche": "Walking sticks",
+    "Jumelles": "Binoculars",
+    "Cartes de sentiers / Guide": "Trail maps / Guide",
+    "Petit sac à dos": "Small backpack",
+    "Porte-forfait ski": "Ski pass holder",
+    "Appareil photo": "Camera",
+    "Cadeau": "Gift",
+    "Décorations de fête": "Party decorations",
+    "Serviette de plage": "Beach towel",
+    "Matériel de plongée (masque/tuba)": "Snorkeling gear (mask/snorkel)",
+    "Sac de plage": "Beach bag",
+    "Jeux gonflables / Ballon": "Inflatable toys / Ball",
+    "Chaise haute portable / Réhausseur": "Portable high chair / Booster seat",
+
+    // Documents
+    "Carte d'identité": "ID card",
+    "Passeport": "Passport",
+    "Visa (si nécessaire)": "Visa (if required)",
+    "Attestation d'assurance voyage": "Travel insurance certificate",
+    "Carte européenne d'assurance maladie (CEAM)": "European Health Insurance Card (EHIC)",
+    "Carnet de vaccination": "Vaccination record",
+    "Confirmations de réservation (imprimées)": "Booking confirmations (printed)",
+    "Billets d'avion / Carte d'embarquement": "Flight tickets / Boarding pass",
+    "Billets de train": "Train tickets",
+    "Permis de conduire": "Driving license",
+    "Assurance auto / Carte verte": "Car insurance / Green card",
+    "Cartes routières / GPS préparé": "Road maps / GPS prepared",
+    "Liste des contacts d'urgence": "Emergency contacts list",
+    "Copies des documents (sac séparé)": "Document copies (separate bag)",
+    "Devises étrangères / Carte de paiement": "Foreign currency / Payment card",
+    "Carnet de santé (enfant)": "Health record (child)",
+
+    // Electronics
+    "Téléphone + chargeur": "Phone + charger",
+    "Batterie externe": "Power bank",
+    "Adaptateur universel": "Universal adapter",
+    "Appareil photo + chargeur + carte mémoire": "Camera + charger + memory card",
+    "Écouteurs / Casque audio": "Earphones / Headphones",
+    "Casque enfant (volume limité)": "Kids headphones (volume limited)",
+    "Tablette / PC portable + chargeur": "Tablet / Laptop + charger",
+    "Babyphone": "Baby monitor",
+    "Rallonge / Multiprise": "Extension cord / Power strip",
+    "Lampe torche / Frontale + piles": "Flashlight / Headlamp + batteries",
+    "Chargeur voiture (USB)": "Car charger (USB)",
+
+    // Sleeping
+    "Tente": "Tent",
+    "Sac de couchage": "Sleeping bag",
+    "Matelas de sol / Matelas gonflable": "Sleep mat / Air mattress",
+    "Oreiller (gonflable / compact)": "Pillow (inflatable / compact)",
+    "Couverture (supplémentaire)": "Blanket (extra)",
+    "Drap de sac de couchage": "Sleeping bag liner",
+    "Bouchons d'oreilles": "Earplugs",
+    "Masque de sommeil": "Sleep mask",
+    "Cadenas (pour casier auberge)": "Padlock (for hostel locker)",
+    "Lit parapluie / Lit de voyage": "Travel cot / Portable crib",
+
+    // Kitchen
+    "Glacière": "Cooler",
+    "Réchaud camping + gaz": "Camping stove + gas",
+    "Casseroles / Poêles (camping)": "Pots / Pans (camping)",
+    "Assiettes / Bols": "Plates / Bowls",
+    "Couverts (fourchette, couteau, cuillère)": "Cutlery (fork, knife, spoon)",
+    "Couverts bébé + assiette plastique": "Baby cutlery + plastic plate",
+    "Biberons + lait / Petits pots": "Bottles + milk / Baby food",
+    "Gobelet anti-fuite": "Spill-proof cup",
+    "Tasses / Mugs": "Cups / Mugs",
+    "Ouvre-boîte / Décapsuleur": "Can opener / Bottle opener",
+    "Gourdes": "Water bottles",
+    "Encas pour le trajet": "Snacks for the trip",
+    "Sacs poubelle": "Garbage bags",
+    "Liquide vaisselle + éponge": "Dish soap + sponge",
+    "Allumettes / Briquet": "Matches / Lighter",
+    "Papier aluminium / Film alimentaire": "Aluminum foil / Cling wrap",
+
+    // Misc
+    "Valise / Sac de voyage": "Suitcase / Travel bag",
+    "Sac à langer (avec matelas)": "Diaper bag (with changing mat)",
+    "Bagage cabine / Sac à dos": "Carry-on / Backpack",
+    "Étiquettes à bagages": "Luggage tags",
+    "Cadenas à bagages": "Luggage lock",
+    "Sacs plastique (zip)": "Plastic bags (zip)",
+    "Sac à linge sale": "Dirty laundry bag",
+    "Corde à linge + pinces": "Clothesline + clips",
+    "Parapluie": "Umbrella",
+    "Couteau suisse / Multi-outil": "Swiss knife / Multi-tool",
+    "Ruban adhésif (petit rouleau)": "Tape (small roll)",
+    "Kit de couture (mini)": "Sewing kit (mini)",
+    "Sac de courses réutilisable": "Reusable shopping bag",
+    "Kit de sécurité voiture (triangle, gilet)": "Car safety kit (triangle, vest)",
+    "Gilet fluorescent": "Reflective vest",
+    "Siège auto (enfant)": "Car seat (child)",
+    "Guide de conversation / Appli traduction": "Phrasebook / Translation app",
+
+    // ── Category labels ──
+    "🧴 Toilette": "🧴 Toiletries",
+    "👕 Vêtements": "👕 Clothing",
+    "🏥 Santé / Premiers secours": "🏥 Health / First aid",
+    "🎮 Loisirs / Activités": "🎮 Leisure / Activities",
+    "📄 Documents": "📄 Documents",
+    "🔌 Électronique": "🔌 Electronics",
+    "😴 Couchage": "😴 Sleeping",
+    "🍳 Cuisine / Alimentation": "🍳 Kitchen / Food",
+    "📦 Divers": "📦 Miscellaneous",
+
+    // ── UI strings ──
+    "Générateur de Liste de Bagages": "Trip Packing List Generator",
+    "N'oubliez plus rien — préparez vos valises en quelques secondes": "Never forget anything — pack your bags in seconds",
+    "Configurer le voyage": "Configure trip",
+    "Votre liste de bagages": "Your packing list",
+    "Détails du voyage": "Trip details",
+    "Nombre de personnes": "Number of people",
+    "Saison": "Season",
+    "Destination": "Destination",
+    "Transport": "Transport",
+    "Hébergement": "Accommodation",
+    "Nombre de jours": "Number of days",
+    "Participants": "Participants",
+    "Activités spéciales": "Special activities",
+    "Générer la liste": "Generate list",
+    "Modifier le voyage": "Edit trip",
+    "Imprimer": "Print",
+    "Tout décocher": "Uncheck all",
+    "Charger": "Load",
+    "Sauvegarder": "Save",
+    "Supprimer": "Delete",
+    "Nom du profil…": "Profile name…",
+    "Nom :": "Name:",
+    "Âge :": "Age:",
+    "Personne": "Person",
+    "Ajouter un objet…": "Add an item…",
+    "Ajouter": "Add",
+    "Objets communs": "Shared items",
+    "Pour tout le groupe": "For the whole group",
+    "Affaires de": "Belongings of",
+    "objets préparés": "items packed",
+    "ans": "y/o",
+
+    // Season / Destination / Transport / Accommodation / Activity display names
+    "☀️ Été": "☀️ Summer",
+    "🌸 Printemps": "🌸 Spring",
+    "🍂 Automne": "🍂 Fall",
+    "❄️ Hiver": "❄️ Winter",
+    "🇫🇷 France": "🇫🇷 France",
+    "✈️ Étranger": "✈️ Abroad",
+    "🚗 Voiture": "🚗 Car",
+    "🚆 Train": "🚆 Train",
+    "✈️ Avion": "✈️ Flight",
+    "⛺ Camping": "⛺ Camping",
+    "🏨 Hôtel/Auberge": "🏨 Hotel/Hostel",
+    "👨‍👩‍👧 Famille/Location": "👨‍👩‍👧 Family/Rental",
+    "🥾 Randonnée": "🥾 Hiking",
+    "⛷️ Ski": "⛷️ Skiing",
+    "🎉 Fête": "🎉 Party",
+    "🏊 Baignade": "🏊 Swimming",
+    "🥾 Randonnée / Marche": "🥾 Hiking / Walking",
+    "⛷️ Ski": "⛷️ Skiing",
+    "🎉 Fête / Célébration": "🎉 Party / Celebration",
+    "🏊 Baignade / Plage": "🏊 Swimming / Beach",
+    "👨‍👩‍👧 Famille / Location": "👨‍👩‍👧 Family / Rental",
+    "🏨 Hôtel / Auberge": "🏨 Hotel / Hostel",
+
+    // Age group labels
+    "👶 Bébé": "👶 Baby",
+    "🧒 Enfant": "🧒 Child",
+    "🧑 Ado": "🧑 Teen",
+    "🧑‍🦱 Adulte": "🧑‍🦱 Adult",
+
+    // Profile messages
+    "— Choisir un profil —": "— Choose a profile —",
+    "Veuillez entrer un nom de profil": "Please enter a profile name",
+    "Sélectionnez un profil à charger": "Select a profile to load",
+    "Sélectionnez un profil à supprimer": "Select a profile to delete",
+
+    // Trip save
+    "Voyage complet": "Full trip",
+    "— Choisir un voyage —": "— Choose a trip —",
+    "Nom du voyage…": "Trip name…",
+    "Veuillez entrer un nom de voyage": "Please enter a trip name",
+    "Sélectionnez un voyage à charger": "Select a trip to load",
+    "Sélectionnez un voyage à supprimer": "Select a trip to delete",
+
+    // Export
+    "Copier la liste": "Copy list",
+    "Liste copiée ✓": "List copied ✓",
+
+    // Weight
+    "Poids total estimé": "Estimated total weight",
+    "Limite cabine": "Cabin limit",
+    "⚠️ Dépasse la limite cabine avion (10 kg)": "⚠️ Exceeds cabin baggage limit (10 kg)",
+
+    // Config
+    "Sauvegarder la configuration": "Save configuration",
+    "Réinitialiser la configuration": "Reset configuration",
+    "Configuration sauvegardée ✓": "Configuration saved ✓",
+    "Configuration réinitialisée": "Configuration reset",
+    "Vos modifications (suppressions et quantités) seront mémorisées": "Your changes (deletions and quantities) will be remembered",
+};
+
+function t(text) {
+    if (currentLang !== 'en') return text;
+    return EN[text] || text;
+}
+
+function chooseLang(lang) {
+    currentLang = lang;
+    localStorage.setItem(LANG_KEY, lang);
+    document.getElementById('langOverlay').classList.add('hidden');
+    setTimeout(() => { document.getElementById('langOverlay').style.display = 'none'; }, 400);
+    applyLanguage();
+}
+
+function showLangOverlay() {
+    const overlay = document.getElementById('langOverlay');
+    overlay.style.display = '';
+    overlay.classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  HELP BUBBLE
+// ─────────────────────────────────────────────
+
+function toggleHelp() {
+    const overlay = document.getElementById('helpOverlay');
+    const isOpen = overlay.classList.contains('show');
+    if (isOpen) {
+        overlay.classList.remove('show');
+    } else {
+        renderHelp();
+        overlay.classList.add('show');
+    }
+}
+
+function renderHelp() {
+    const panel = document.getElementById('helpPanel');
+    const isEN = currentLang === 'en';
+
+    panel.innerHTML = isEN ? `
+        <button class="help-close" onclick="toggleHelp()">✕</button>
+        <h2>❓ Help — How to use</h2>
+
+        <h3>🧳 1. Configure your trip</h3>
+        <ul>
+            <li>Fill in the number of travelers, season, destination, transport, accommodation, and trip duration.</li>
+            <li>Enter the <strong>name</strong> and <strong>age</strong> of each participant — items adapt automatically (baby, child, teen, adult).</li>
+            <li>Check any <strong>special activities</strong> (hiking, skiing, swimming, party).</li>
+        </ul>
+
+        <h3>📋 2. Generate & customize your list</h3>
+        <ul>
+            <li>Click <strong>"Generate list"</strong> to see your packing list split by person.</li>
+            <li>Use the tabs to switch between <strong>shared items</strong> and each person's belongings.</li>
+            <li>Check items as you pack — progress is saved automatically, even if you close the page.</li>
+            <li>Use <span class="help-shortcut">−</span> / <span class="help-shortcut">+</span> to adjust quantities.</li>
+            <li>Click <span class="help-shortcut">×</span> to remove an item you don't need.</li>
+            <li>Use the "Add an item…" row at the bottom of each category to add your own items.</li>
+            <li>Drag items with the <span class="help-shortcut">⠿</span> handle to reorder within a category.</li>
+        </ul>
+
+        <h3>💾 3. Save your configuration</h3>
+        <ul>
+            <li><strong>Participant profiles</strong> — save just names + ages for quick reuse.</li>
+            <li><strong>Full trip</strong> — save the entire form (season, transport, participants, activities…) under a name.</li>
+            <li><strong>List configuration</strong> — save removed items and quantity changes with the green "Save configuration" button. They'll be remembered next time.</li>
+        </ul>
+
+        <h3>📋 4. Export & print</h3>
+        <ul>
+            <li><strong>"Copy"</strong> copies the full list as text to your clipboard (for messaging apps, notes…).</li>
+            <li><strong>"Print"</strong> opens the print dialog — all sections are shown for a complete printout.</li>
+        </ul>
+
+        <h3>⚖️ 5. Weight estimate</h3>
+        <p>An estimated total weight is shown. For flights, a warning appears if you exceed the typical 10 kg cabin limit.</p>
+
+        <h3>📱 6. Mobile / Offline</h3>
+        <p>This app works as a PWA — add it to your home screen (iOS: Share → Add to Home Screen / Android: menu → Install). It works offline after the first load.</p>
+
+        <h3>🌐 7. Language</h3>
+        <p>Switch between French and English anytime using the <span class="help-shortcut">🌐 FR / EN</span> button in the header.</p>
+    ` : `
+        <button class="help-close" onclick="toggleHelp()">✕</button>
+        <h2>❓ Aide — Mode d'emploi</h2>
+
+        <h3>🧳 1. Configurer votre voyage</h3>
+        <ul>
+            <li>Remplissez le nombre de voyageurs, la saison, la destination, le transport, l'hébergement et la durée.</li>
+            <li>Entrez le <strong>nom</strong> et l'<strong>âge</strong> de chaque participant — les objets s'adaptent automatiquement (bébé, enfant, ado, adulte).</li>
+            <li>Cochez les <strong>activités spéciales</strong> (randonnée, ski, baignade, fête).</li>
+        </ul>
+
+        <h3>📋 2. Générer et personnaliser la liste</h3>
+        <ul>
+            <li>Cliquez sur <strong>« Générer la liste »</strong> pour voir votre liste triée par personne.</li>
+            <li>Utilisez les onglets pour passer des <strong>objets communs</strong> aux affaires de chaque personne.</li>
+            <li>Cochez les objets au fur et à mesure — la progression est sauvegardée automatiquement, même si vous fermez la page.</li>
+            <li>Utilisez <span class="help-shortcut">−</span> / <span class="help-shortcut">+</span> pour ajuster les quantités.</li>
+            <li>Cliquez sur <span class="help-shortcut">×</span> pour supprimer un objet inutile.</li>
+            <li>Utilisez la ligne « Ajouter un objet… » en bas de chaque catégorie pour ajouter vos propres objets.</li>
+            <li>Glissez les objets avec la poignée <span class="help-shortcut">⠿</span> pour réordonner dans une catégorie.</li>
+        </ul>
+
+        <h3>💾 3. Sauvegarder votre configuration</h3>
+        <ul>
+            <li><strong>Profils de participants</strong> — sauvegardez les noms + âges pour les réutiliser rapidement.</li>
+            <li><strong>Voyage complet</strong> — sauvegardez tout le formulaire (saison, transport, participants, activités…) sous un nom.</li>
+            <li><strong>Configuration de la liste</strong> — sauvegardez les suppressions et modifications de quantités avec le bouton vert « Sauvegarder la configuration ». Elles seront mémorisées.</li>
+        </ul>
+
+        <h3>📋 4. Exporter et imprimer</h3>
+        <ul>
+            <li><strong>« Copier »</strong> copie toute la liste en texte dans le presse-papier (pour messagerie, notes…).</li>
+            <li><strong>« Imprimer »</strong> ouvre la boîte de dialogue d'impression — toutes les sections apparaissent.</li>
+        </ul>
+
+        <h3>⚖️ 5. Estimation du poids</h3>
+        <p>Un poids total estimé est affiché. En avion, un avertissement apparaît si vous dépassez la limite cabine de 10 kg.</p>
+
+        <h3>📱 6. Mobile / Hors-ligne</h3>
+        <p>L'application fonctionne en PWA — ajoutez-la à l'écran d'accueil (iOS : Partager → Sur l'écran d'accueil / Android : menu → Installer). Elle fonctionne hors-ligne après le premier chargement.</p>
+
+        <h3>🌐 7. Langue</h3>
+        <p>Basculez entre français et anglais à tout moment avec le bouton <span class="help-shortcut">🌐 FR / EN</span> dans l'en-tête.</p>
+    `;
+}
+
+function applyLanguage() {
+    // Update <html lang>
+    document.documentElement.lang = currentLang === 'en' ? 'en' : 'fr';
+
+    // Header
+    document.getElementById('mainTitle').textContent = '🧳 ' + t('Générateur de Liste de Bagages');
+    document.getElementById('mainSubtitle').textContent = t("N'oubliez plus rien — préparez vos valises en quelques secondes");
+
+    // Steps
+    document.getElementById('stepLabel1').textContent = t('Configurer le voyage');
+    document.getElementById('stepLabel2').textContent = t('Votre liste de bagages');
+
+    // Form
+    document.getElementById('formTitle').textContent = '⚙️ ' + t('Détails du voyage');
+
+    // Labels
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const map = {
+            nbPersons: 'Nombre de personnes',
+            season: 'Saison',
+            destination: 'Destination',
+            transport: 'Transport',
+            accommodation: 'Hébergement',
+            nbDays: 'Nombre de jours',
+            participants: 'Participants',
+            activities: 'Activités spéciales',
+            load: 'Charger',
+            save: 'Sauvegarder',
+            'delete': 'Supprimer',
+        };
+        if (map[key]) el.textContent = t(map[key]);
+    });
+
+    // Select options
+    const optMap = {
+        summer: '☀️ Été', spring: '🌸 Printemps', fall: '🍂 Automne', winter: '❄️ Hiver',
+        france: '🇫🇷 France', abroad: '✈️ Étranger',
+        car: '🚗 Voiture', train: '🚆 Train', flight: '✈️ Avion',
+        family: '👨‍👩‍👧 Famille / Location', hostel: '🏨 Hôtel / Auberge', camp: '⛺ Camping',
+        walking: '🥾 Randonnée / Marche', skiing: '⛷️ Ski',
+        celebration: '🎉 Fête / Célébration', swimming: '🏊 Baignade / Plage',
+    };
+    document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-opt');
+        if (optMap[key]) el.textContent = t(optMap[key]);
+    });
+
+    // Buttons
+    document.getElementById('btnGenerate').textContent = '🧳 ' + t('Générer la liste');
+    document.getElementById('resultTitle').textContent = '📋 ' + t('Votre liste de bagages');
+    document.getElementById('btnBack').textContent = '← ' + t('Modifier le voyage');
+    document.getElementById('btnPrint').textContent = '🖨️ ' + t('Imprimer');
+    document.getElementById('btnReset').textContent = '↺ ' + t('Tout décocher');
+
+    // Profile
+    document.getElementById('profileNameInput').placeholder = t('Nom du profil…');
+    refreshProfileList();
+
+    // Trip bar
+    document.getElementById('tripBarLabel').textContent = '🗺️ ' + t('Voyage complet');
+    document.getElementById('tripNameInput').placeholder = t('Nom du voyage…');
+    refreshTripList();
+
+    // Export button
+    document.getElementById('btnExport').textContent = '📋 ' + t('Copier la liste');
+
+    // Config bar
+    document.getElementById('btnSaveConfig').textContent = '💾 ' + t('Sauvegarder la configuration');
+    document.getElementById('btnResetConfig').textContent = '↺ ' + t('Réinitialiser la configuration');
+    document.getElementById('configInfo').textContent = t('Vos modifications (suppressions et quantités) seront mémorisées');
+
+    // Rebuild participant fields to update labels
+    buildParticipantFields();
+}
+
+// ─────────────────────────────────────────────
+//  DATA: items per category with conditions
+//  condition(c) receives trip context
+//  personCondition(p, c) receives person + trip context
+//  scope: "personal" = per-person, "shared" = one for the group
+// ─────────────────────────────────────────────
+
+const ITEMS = {
+    toiletries: {
+        label: "🧴 Toilette",
+        cssClass: "cat-toiletries",
+        items: [
+            { name: "Brosse à dents", qty: 1, scope: "personal", weight: 20 },
+            { name: "Dentifrice", qty: 1, scope: "shared", weight: 100 },
+            { name: "Savon / Gel douche", qty: 1, scope: "shared", weight: 250 },
+            { name: "Shampoing", qty: 1, scope: "shared", weight: 250 },
+            { name: "Déodorant", qty: 1, scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 80 },
+            { name: "Brosse / Peigne", qty: 1, scope: "personal", weight: 30 },
+            { name: "Rasoir", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 50 },
+            { name: "Crème solaire (SPF 50)", qty: 1, scope: "shared", condition: c => ["summer","spring"].includes(c.season), weight: 200 },
+            { name: "Après-soleil", qty: 1, scope: "shared", condition: c => c.season === "summer", weight: 200 },
+            { name: "Baume à lèvres", qty: 1, scope: "personal", condition: c => ["winter","fall"].includes(c.season), weight: 10 },
+            { name: "Répulsif anti-insectes", qty: 1, scope: "shared", condition: c => ["summer","spring"].includes(c.season), weight: 100 },
+            { name: "Serviette (grande)", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", weight: 500 },
+            { name: "Serviette (petite)", qty: 1, scope: "personal", condition: c => c.accommodation !== "family", weight: 200 },
+            { name: "Papier toilette", qty: 2, scope: "shared", condition: c => c.accommodation === "camp", weight: 100 },
+            { name: "Gel hydroalcoolique", qty: 1, scope: "shared", weight: 100 },
+            { name: "Mouchoirs", qty: 2, scope: "shared", weight: 30 },
+            { name: "Miroir (poche)", qty: 1, scope: "shared", weight: 50 },
+            { name: "Trousse de maquillage", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 300 },
+            { name: "Couches (paquet)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 800 },
+            { name: "Lingettes bébé", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 200 },
+            { name: "Shampoing / Gel lavant bébé", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 200 },
+            { name: "Crème pour le change", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 100 },
+            { name: "Crème solaire bébé", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", condition: c => ["summer","spring"].includes(c.season), weight: 100 },
+        ]
+    },
+
+    clothing: {
+        label: "👕 Vêtements",
+        cssClass: "cat-clothing",
+        items: [
+            { name: "Sous-vêtements", qtyFn: (p, c) => Math.min(c.days + 1, 10), scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 50 },
+            { name: "Chaussettes (paires)", qtyFn: (p, c) => Math.min(c.days + 1, 10), scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 40 },
+            { name: "Pyjama", qty: 1, scope: "personal", weight: 200 },
+            { name: "Bodys / Grenouillères", qtyFn: (p, c) => Math.min(c.days + 2, 12), scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 80 },
+            { name: "Bavoirs", qty: 3, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 30 },
+            { name: "Bonnet bébé", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 30 },
+            { name: "Moufles / Chaussons bébé", qty: 2, scope: "personal", personCondition: p => p.ageGroup === "baby", condition: c => ["winter","fall"].includes(c.season), weight: 30 },
+            { name: "Tenues de rechange bébé", qtyFn: (p, c) => Math.min(c.days, 7), scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 100 },
+            { name: "T-shirts", qtyFn: (p, c) => Math.min(c.days, 7), scope: "personal", condition: c => ["summer","spring"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Shorts", qtyFn: (p, c) => Math.ceil(Math.min(c.days, 7) / 2), scope: "personal", condition: c => c.season === "summer", personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Robe légère / Jupe", qty: 1, scope: "personal", condition: c => c.season === "summer", personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Maillot de bain", qty: 1, scope: "personal", condition: c => c.season === "summer" || c.activities.includes("swimming"), personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Couche de bain", qty: 3, scope: "personal", condition: c => c.season === "summer" || c.activities.includes("swimming"), personCondition: p => p.ageGroup === "baby", weight: 50 },
+            { name: "Sandales / Tongs", qty: 1, scope: "personal", condition: c => ["summer","spring"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 300 },
+            { name: "Lunettes de soleil", qty: 1, scope: "personal", condition: c => ["summer","spring"].includes(c.season) || c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 30 },
+            { name: "Chapeau / Casquette", qty: 1, scope: "personal", condition: c => ["summer","spring"].includes(c.season), weight: 80 },
+            { name: "Veste chaude / Manteau", qty: 1, scope: "personal", condition: c => ["winter","fall"].includes(c.season), weight: 1200 },
+            { name: "Pulls", qtyFn: (p, c) => Math.ceil(Math.min(c.days, 7) / 2), scope: "personal", condition: c => ["winter","fall"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 400 },
+            { name: "Pantalons longs / Jeans", qtyFn: (p, c) => Math.ceil(Math.min(c.days, 7) / 3), scope: "personal", condition: c => ["winter","fall","spring"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 600 },
+            { name: "Sous-vêtements thermiques", qty: 2, scope: "personal", condition: c => c.season === "winter", personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Gants chauds", qty: 1, scope: "personal", condition: c => c.season === "winter", personCondition: p => p.ageGroup !== "baby", weight: 100 },
+            { name: "Écharpe", qty: 1, scope: "personal", condition: c => ["winter","fall"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Bonnet chaud", qty: 1, scope: "personal", condition: c => c.season === "winter", weight: 80 },
+            { name: "Chaussettes chaudes (laine)", qty: 3, scope: "personal", condition: c => c.season === "winter", personCondition: p => p.ageGroup !== "baby", weight: 60 },
+            { name: "Bottes (chaudes / imperméables)", qty: 1, scope: "personal", condition: c => ["winter","fall"].includes(c.season), personCondition: p => p.ageGroup !== "baby", weight: 1500 },
+            { name: "Veste légère / Coupe-vent", qty: 1, scope: "personal", condition: c => ["spring","fall"].includes(c.season), weight: 400 },
+            { name: "Veste de pluie / Poncho", qty: 1, scope: "personal", condition: c => ["spring","fall"].includes(c.season) || c.activities.includes("walking"), weight: 300 },
+            { name: "Chaussures de randonnée", qty: 1, scope: "personal", condition: c => c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 1000 },
+            { name: "Pantalon de randonnée", qty: 2, scope: "personal", condition: c => c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 350 },
+            { name: "T-shirts respirants", qty: 2, scope: "personal", condition: c => c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 120 },
+            { name: "Guêtres", qty: 1, scope: "personal", condition: c => c.activities.includes("walking") && c.season === "winter", personCondition: p => p.ageGroup === "adult", weight: 200 },
+            { name: "Veste de ski", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 1000 },
+            { name: "Pantalon de ski", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 800 },
+            { name: "Gants de ski", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Masque de ski", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 200 },
+            { name: "Chaussettes de ski (épaisses)", qty: 3, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 80 },
+            { name: "Tour de cou / Cagoule", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 50 },
+            { name: "Casque (ou location sur place)", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 500 },
+            { name: "Tenue de soirée", qty: 1, scope: "personal", condition: c => c.activities.includes("celebration"), personCondition: p => p.ageGroup !== "baby", weight: 500 },
+            { name: "Chaussures habillées", qty: 1, scope: "personal", condition: c => c.activities.includes("celebration"), personCondition: p => p.ageGroup !== "baby", weight: 600 },
+            { name: "Chaussures de marche confortables", qty: 1, scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 700 },
+        ]
+    },
+
+    medical: {
+        label: "🏥 Santé / Premiers secours",
+        cssClass: "cat-medical",
+        items: [
+            { name: "Trousse de premiers secours", qty: 1, scope: "shared", weight: 300 },
+            { name: "Médicaments personnels", qty: 1, scope: "personal", weight: 100 },
+            { name: "Antidouleurs (paracétamol / ibuprofène)", qty: 1, scope: "shared", weight: 50 },
+            { name: "Antidouleur enfant (sirop)", qty: 1, scope: "shared", condition: c => c.participants && c.participants.some(p => getAgeGroup(p.age) === "child" || getAgeGroup(p.age) === "baby"), weight: 150 },
+            { name: "Pansements (assortis)", qty: 1, scope: "shared", weight: 30 },
+            { name: "Désinfectant", qty: 1, scope: "shared", weight: 100 },
+            { name: "Bande élastique", qty: 1, scope: "shared", weight: 30 },
+            { name: "Pince à épiler", qty: 1, scope: "shared", weight: 10 },
+            { name: "Thermomètre", qty: 1, scope: "shared", weight: 20 },
+            { name: "Anti-diarrhéique", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 30 },
+            { name: "Sels de réhydratation", qty: 1, scope: "shared", condition: c => c.destination === "abroad" || c.season === "summer", weight: 30 },
+            { name: "Médicament anti-mal des transports", qty: 1, scope: "shared", condition: c => ["car","flight"].includes(c.transport), weight: 30 },
+            { name: "Pansements ampoules", qty: 1, scope: "shared", condition: c => c.activities.includes("walking") || c.activities.includes("skiing"), weight: 20 },
+            { name: "Gel anti-douleur musculaire", qty: 1, scope: "shared", condition: c => c.activities.includes("walking") || c.activities.includes("skiing"), weight: 100 },
+            { name: "Antihistaminiques (allergies)", qty: 1, scope: "shared", weight: 30 },
+            { name: "Crème après coup de soleil", qty: 1, scope: "shared", condition: c => c.season === "summer", weight: 150 },
+            { name: "Antipyrétique bébé (dose nourrisson)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 100 },
+            { name: "Sérum physiologique (bébé)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 50 },
+        ]
+    },
+
+    leisure: {
+        label: "🎮 Loisirs / Activités",
+        cssClass: "cat-leisure",
+        items: [
+            { name: "Livres / Liseuse", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 200 },
+            { name: "Cahier de coloriage + crayons", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "child", weight: 200 },
+            { name: "Jouet préféré / Doudou", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "child" || p.ageGroup === "baby", weight: 100 },
+            { name: "Porte-bébé / Écharpe", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 600 },
+            { name: "Poussette (compacte / voyage)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 6000 },
+            { name: "Tétine (+ rechange)", qty: 2, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 10 },
+            { name: "Jeux de cartes / Jeux de société", qty: 1, scope: "shared", weight: 200 },
+            { name: "Carnet + stylo", qty: 1, scope: "shared", weight: 100 },
+            { name: "Bâtons de marche", qty: 1, scope: "personal", condition: c => c.activities.includes("walking"), personCondition: p => p.ageGroup === "adult", weight: 500 },
+            { name: "Jumelles", qty: 1, scope: "shared", condition: c => c.activities.includes("walking"), weight: 300 },
+            { name: "Cartes de sentiers / Guide", qty: 1, scope: "shared", condition: c => c.activities.includes("walking"), weight: 150 },
+            { name: "Petit sac à dos", qty: 1, scope: "personal", condition: c => c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 400 },
+            { name: "Porte-forfait ski", qty: 1, scope: "personal", condition: c => c.activities.includes("skiing"), personCondition: p => p.ageGroup !== "baby", weight: 20 },
+            { name: "Appareil photo", qty: 1, scope: "shared", weight: 300 },
+            { name: "Cadeau", qty: 1, scope: "shared", condition: c => c.activities.includes("celebration"), weight: 500 },
+            { name: "Décorations de fête", qty: 1, scope: "shared", condition: c => c.activities.includes("celebration"), weight: 200 },
+            { name: "Serviette de plage", qty: 1, scope: "personal", condition: c => c.activities.includes("swimming"), weight: 400 },
+            { name: "Matériel de plongée (masque/tuba)", qty: 1, scope: "shared", condition: c => c.activities.includes("swimming"), weight: 300 },
+            { name: "Sac de plage", qty: 1, scope: "shared", condition: c => c.activities.includes("swimming"), weight: 200 },
+            { name: "Jeux gonflables / Ballon", qty: 1, scope: "shared", condition: c => c.activities.includes("swimming") || c.accommodation === "camp", weight: 300 },
+            { name: "Chaise haute portable / Réhausseur", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby" || (p.ageGroup === "child" && p.age < 5), weight: 2000 },
+        ]
+    },
+
+    documents: {
+        label: "📄 Documents",
+        cssClass: "cat-documents",
+        items: [
+            { name: "Carte d'identité", qty: 1, scope: "personal", condition: c => c.destination === "france", weight: 10 },
+            { name: "Passeport", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 30 },
+            { name: "Visa (si nécessaire)", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 5 },
+            { name: "Attestation d'assurance voyage", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 10 },
+            { name: "Carte européenne d'assurance maladie (CEAM)", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 5 },
+            { name: "Carnet de vaccination", qty: 1, scope: "personal", condition: c => c.destination === "abroad", weight: 30 },
+            { name: "Confirmations de réservation (imprimées)", qty: 1, scope: "shared", weight: 20 },
+            { name: "Billets d'avion / Carte d'embarquement", qty: 1, scope: "personal", condition: c => c.transport === "flight", weight: 10 },
+            { name: "Billets de train", qty: 1, scope: "personal", condition: c => c.transport === "train", weight: 10 },
+            { name: "Permis de conduire", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 10 },
+            { name: "Assurance auto / Carte verte", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 10 },
+            { name: "Cartes routières / GPS préparé", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 100 },
+            { name: "Liste des contacts d'urgence", qty: 1, scope: "shared", weight: 5 },
+            { name: "Copies des documents (sac séparé)", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 30 },
+            { name: "Devises étrangères / Carte de paiement", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 20 },
+            { name: "Carnet de santé (enfant)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby" || p.ageGroup === "child", weight: 50 },
+        ]
+    },
+
+    electronics: {
+        label: "🔌 Électronique",
+        cssClass: "cat-electronics",
+        items: [
+            { name: "Téléphone + chargeur", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 250 },
+            { name: "Batterie externe", qty: 1, scope: "shared", weight: 200 },
+            { name: "Adaptateur universel", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 100 },
+            { name: "Appareil photo + chargeur + carte mémoire", qty: 1, scope: "shared", weight: 500 },
+            { name: "Écouteurs / Casque audio", qty: 1, scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 50 },
+            { name: "Casque enfant (volume limité)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "child", weight: 100 },
+            { name: "Tablette / PC portable + chargeur", qty: 1, scope: "shared", weight: 1500 },
+            { name: "Babyphone", qty: 1, scope: "shared", condition: c => c.participants && c.participants.some(p => getAgeGroup(p.age) === "baby"), weight: 200 },
+            { name: "Rallonge / Multiprise", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 300 },
+            { name: "Lampe torche / Frontale + piles", qty: 1, scope: "personal", condition: c => c.accommodation === "camp" || c.activities.includes("walking"), personCondition: p => p.ageGroup !== "baby", weight: 100 },
+            { name: "Chargeur voiture (USB)", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 50 },
+        ]
+    },
+
+    sleeping: {
+        label: "😴 Couchage",
+        cssClass: "cat-sleeping",
+        items: [
+            { name: "Tente", qtyFn: (p, c) => Math.ceil(c.persons / 2), scope: "shared", condition: c => c.accommodation === "camp", weight: 3000 },
+            { name: "Sac de couchage", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", weight: 1200 },
+            { name: "Matelas de sol / Matelas gonflable", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", personCondition: p => p.ageGroup !== "baby", weight: 800 },
+            { name: "Oreiller (gonflable / compact)", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", weight: 100 },
+            { name: "Couverture (supplémentaire)", qty: 1, scope: "shared", condition: c => c.accommodation === "camp" && ["winter","fall"].includes(c.season), weight: 1000 },
+            { name: "Drap de sac de couchage", qty: 1, scope: "personal", condition: c => c.accommodation === "hostel", weight: 300 },
+            { name: "Bouchons d'oreilles", qty: 1, scope: "personal", condition: c => c.accommodation === "hostel" || c.accommodation === "camp", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 5 },
+            { name: "Masque de sommeil", qty: 1, scope: "personal", condition: c => c.accommodation === "hostel", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 20 },
+            { name: "Cadenas (pour casier auberge)", qty: 1, scope: "personal", condition: c => c.accommodation === "hostel", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 80 },
+            { name: "Lit parapluie / Lit de voyage", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 5000 },
+        ]
+    },
+
+    kitchen: {
+        label: "🍳 Cuisine / Alimentation",
+        cssClass: "cat-kitchen",
+        items: [
+            { name: "Glacière", qty: 1, scope: "shared", condition: c => c.accommodation === "camp" || c.transport === "car", weight: 2000 },
+            { name: "Réchaud camping + gaz", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 800 },
+            { name: "Casseroles / Poêles (camping)", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 500 },
+            { name: "Assiettes / Bols", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", weight: 100 },
+            { name: "Couverts (fourchette, couteau, cuillère)", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", personCondition: p => p.ageGroup !== "baby", weight: 50 },
+            { name: "Couverts bébé + assiette plastique", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 80 },
+            { name: "Biberons + lait / Petits pots", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 500 },
+            { name: "Gobelet anti-fuite", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby" || (p.ageGroup === "child" && p.age < 5), weight: 80 },
+            { name: "Tasses / Mugs", qty: 1, scope: "personal", condition: c => c.accommodation === "camp", personCondition: p => p.ageGroup !== "baby", weight: 150 },
+            { name: "Ouvre-boîte / Décapsuleur", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 50 },
+            { name: "Gourdes", qty: 1, scope: "personal", weight: 200 },
+            { name: "Encas pour le trajet", qty: 1, scope: "shared", condition: c => ["car","train"].includes(c.transport), weight: 300 },
+            { name: "Sacs poubelle", qty: 3, scope: "shared", condition: c => c.accommodation === "camp", weight: 30 },
+            { name: "Liquide vaisselle + éponge", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 200 },
+            { name: "Allumettes / Briquet", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 20 },
+            { name: "Papier aluminium / Film alimentaire", qty: 1, scope: "shared", condition: c => c.accommodation === "camp", weight: 50 },
+        ]
+    },
+
+    misc: {
+        label: "📦 Divers",
+        cssClass: "cat-misc",
+        items: [
+            { name: "Valise / Sac de voyage", qty: 1, scope: "personal", personCondition: p => p.ageGroup !== "baby", weight: 3000 },
+            { name: "Sac à langer (avec matelas)", qty: 1, scope: "personal", personCondition: p => p.ageGroup === "baby", weight: 500 },
+            { name: "Bagage cabine / Sac à dos", qty: 1, scope: "personal", condition: c => c.transport === "flight", personCondition: p => p.ageGroup !== "baby", weight: 1500 },
+            { name: "Étiquettes à bagages", qty: 1, scope: "personal", condition: c => c.transport === "flight", personCondition: p => p.ageGroup !== "baby", weight: 20 },
+            { name: "Cadenas à bagages", qty: 1, scope: "personal", condition: c => c.transport === "flight" || c.transport === "train", personCondition: p => p.ageGroup === "adult" || p.ageGroup === "teen", weight: 60 },
+            { name: "Sacs plastique (zip)", qty: 5, scope: "shared", weight: 10 },
+            { name: "Sac à linge sale", qty: 1, scope: "shared", weight: 50 },
+            { name: "Corde à linge + pinces", qty: 1, scope: "shared", condition: c => c.days > 5 || c.accommodation === "camp", weight: 100 },
+            { name: "Parapluie", qty: 1, scope: "shared", condition: c => ["spring","fall"].includes(c.season), weight: 350 },
+            { name: "Couteau suisse / Multi-outil", qty: 1, scope: "shared", condition: c => c.transport !== "flight", weight: 100 },
+            { name: "Ruban adhésif (petit rouleau)", qty: 1, scope: "shared", weight: 50 },
+            { name: "Kit de couture (mini)", qty: 1, scope: "shared", weight: 30 },
+            { name: "Sac de courses réutilisable", qty: 2, scope: "shared", weight: 30 },
+            { name: "Kit de sécurité voiture (triangle, gilet)", qty: 1, scope: "shared", condition: c => c.transport === "car", weight: 800 },
+            { name: "Gilet fluorescent", qty: 1, scope: "personal", condition: c => c.transport === "car", personCondition: p => p.ageGroup !== "baby", weight: 80 },
+            { name: "Siège auto (enfant)", qty: 1, scope: "personal", condition: c => c.transport === "car", personCondition: p => p.ageGroup === "baby" || p.ageGroup === "child", weight: 8000 },
+            { name: "Guide de conversation / Appli traduction", qty: 1, scope: "shared", condition: c => c.destination === "abroad", weight: 200 },
+        ]
+    }
+};
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+
+function getAgeGroup(age) {
+    if (age < 3) return "baby";
+    if (age < 13) return "child";
+    if (age < 18) return "teen";
+    return "adult";
+}
+
+function getAgeGroupLabel(ageGroup) {
+    const labels = { baby: "👶 Bébé", child: "🧒 Enfant", teen: "🧑 Ado", adult: "🧑‍🦱 Adulte" };
+    return t(labels[ageGroup] || "Adulte");
+}
+
+function getAgeGroupEmoji(ageGroup) {
+    return { baby: "👶", child: "🧒", teen: "🧑", adult: "🧑‍🦱" }[ageGroup] || "🧑";
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ─────────────────────────────────────────────
+//  PARTICIPANT FIELDS
+// ─────────────────────────────────────────────
+
+let lastParticipantCount = 0;
+
+function buildParticipantFields() {
+    const n = Math.max(1, Math.min(20, parseInt(document.getElementById('nbPersons').value) || 1));
+    const container = document.getElementById('participantsContainer');
+
+    // Preserve existing values
+    const existing = [];
+    for (let i = 0; i < lastParticipantCount; i++) {
+        const nameEl = document.getElementById('pName_' + i);
+        const ageEl = document.getElementById('pAge_' + i);
+        existing.push({
+            name: nameEl ? nameEl.value : '',
+            age: ageEl ? ageEl.value : ''
+        });
+    }
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < n; i++) {
+        const prevName = existing[i] ? existing[i].name : '';
+        const prevAge = existing[i] ? existing[i].age : '30';
+        const age = parseInt(prevAge) || 30;
+        const ageGroup = getAgeGroup(age);
+
+        const row = document.createElement('div');
+        row.className = 'participant-row';
+        row.innerHTML = `
+            <span class="p-number">#${i + 1}</span>
+            <span class="p-label">${t('Nom :')}</span>
+            <input type="text" id="pName_${i}" placeholder="${t('Personne')} ${i + 1}" value="${escapeHtml(prevName)}">
+            <span class="p-label">${t('Âge :')}</span>
+            <input type="number" id="pAge_${i}" min="0" max="120" value="${age}" onchange="updateAgeHint(${i})" oninput="updateAgeHint(${i})">
+            <span class="age-hint" id="pAgeHint_${i}">${getAgeGroupLabel(ageGroup)}</span>
+        `;
+        container.appendChild(row);
+    }
+
+    lastParticipantCount = n;
+}
+
+function updateAgeHint(index) {
+    const ageEl = document.getElementById('pAge_' + index);
+    const hintEl = document.getElementById('pAgeHint_' + index);
+    if (ageEl && hintEl) {
+        const age = parseInt(ageEl.value) || 0;
+        hintEl.textContent = getAgeGroupLabel(getAgeGroup(age));
+    }
+}
+
+// ─────────────────────────────────────────────
+//  GATHER CONDITIONS
+// ─────────────────────────────────────────────
+
+function getParticipants() {
+    const n = Math.max(1, Math.min(20, parseInt(document.getElementById('nbPersons').value) || 1));
+    const participants = [];
+    for (let i = 0; i < n; i++) {
+        const nameEl = document.getElementById('pName_' + i);
+        const ageEl = document.getElementById('pAge_' + i);
+        const name = (nameEl ? nameEl.value.trim() : '') || (t('Personne') + ' ' + (i + 1));
+        const age = Math.max(0, parseInt(ageEl ? ageEl.value : '30') || 30);
+        participants.push({ name, age, ageGroup: getAgeGroup(age), index: i });
+    }
+    return participants;
+}
+
+function getConditions() {
+    const activities = [];
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').forEach(cb => {
+        activities.push(cb.value);
+    });
+
+    const participants = getParticipants();
+
+    return {
+        persons: participants.length,
+        participants: participants,
+        season: document.getElementById('season').value,
+        destination: document.getElementById('destination').value,
+        transport: document.getElementById('transport').value,
+        accommodation: document.getElementById('accommodation').value,
+        days: Math.max(1, parseInt(document.getElementById('nbDays').value) || 1),
+        activities: activities
+    };
+}
+
+// ─────────────────────────────────────────────
+//  COMPUTE QTY
+// ─────────────────────────────────────────────
+
+function computeQty(item, person, cond) {
+    if (item.qtyFn) return item.qtyFn(person, cond);
+    return item.qty || 1;
+}
+
+// ─────────────────────────────────────────────
+//  CHECK ITEM APPLICABILITY
+// ─────────────────────────────────────────────
+
+function itemMatchesTrip(item, cond) {
+    return !item.condition || item.condition(cond);
+}
+
+function itemMatchesPerson(item, person) {
+    return !item.personCondition || item.personCondition(person);
+}
+
+// ─────────────────────────────────────────────
+//  BUILD CATEGORY HTML
+// ─────────────────────────────────────────────
+
+function buildCategoryHtml(catKey, cat, items, idPrefix) {
+    if (items.length === 0) return null;
+
+    const catDiv = document.createElement('div');
+    catDiv.className = `category ${cat.cssClass}`;
+
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+        <span class="toggle-icon">▼</span>
+        ${t(cat.label)}
+        <span class="badge">${items.length} items</span>
+    `;
+    header.onclick = function() {
+        const list = this.nextElementSibling;
+        const icon = this.querySelector('.toggle-icon');
+        if (list.style.display === 'none') {
+            list.style.display = '';
+            icon.textContent = '▼';
+        } else {
+            list.style.display = 'none';
+            icon.textContent = '▶';
+        }
+    };
+    catDiv.appendChild(header);
+
+    const ul = document.createElement('ul');
+    ul.className = 'item-list';
+
+    items.forEach((entry, idx) => {
+        const itemId = `${idPrefix}_${catKey}_${idx}`;
+        const li = document.createElement('li');
+        li.className = 'item-row';
+        li.draggable = true;
+        li.dataset.weight = entry.weight || 0;
+        li.dataset.origName = entry.origName || entry.name;
+        const weightG = (entry.weight || 0) * entry.qty;
+        const weightLabel = weightG >= 1000 ? (weightG / 1000).toFixed(1) + ' kg' : weightG + ' g';
+        li.innerHTML = `
+            <span class="drag-handle" title="Drag">⠿</span>
+            <input type="checkbox" id="${itemId}" onchange="toggleItem(this)">
+            <span class="item-name" id="${itemId}_name">${escapeHtml(entry.name)}</span>
+            <span class="item-weight">${weightLabel}</span>
+            <span class="qty-group">
+                <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                <span class="item-qty" data-qty="${entry.qty}">${entry.qty}</span>
+                <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+            </span>
+            <button class="btn-remove-item" onclick="removeListItem(this)" title="${t('Supprimer')}">×</button>
+        `;
+        // Drag events
+        li.addEventListener('dragstart', handleDragStart);
+        li.addEventListener('dragover', handleDragOver);
+        li.addEventListener('dragenter', handleDragEnter);
+        li.addEventListener('dragleave', handleDragLeave);
+        li.addEventListener('drop', handleDrop);
+        li.addEventListener('dragend', handleDragEnd);
+        ul.appendChild(li);
+    });
+
+    catDiv.appendChild(ul);
+
+    // Add item form
+    const addRow = document.createElement('div');
+    addRow.className = 'add-item-row';
+    const addInputId = `addInput_${idPrefix}_${catKey}`;
+    const addQtyId = `addQty_${idPrefix}_${catKey}`;
+    addRow.innerHTML = `
+        <input type="text" id="${addInputId}" placeholder="${t('Ajouter un objet…')}">
+        <input type="number" id="${addQtyId}" min="1" max="99" value="1" title="${currentLang === 'en' ? 'Quantity' : 'Quantité'}">
+        <button class="btn-add-item" onclick="addCustomItem('${addInputId}', '${addQtyId}', this)">+ ${t('Ajouter')}</button>
+    `;
+    catDiv.appendChild(addRow);
+
+    return catDiv;
+}
+
+// ─────────────────────────────────────────────
+//  GENERATE LIST
+// ─────────────────────────────────────────────
+
+function generateList() {
+    const cond = getConditions();
+    window._lastCond = cond;
+    const container = document.getElementById('listContainer');
+    const tabsContainer = document.getElementById('personTabs');
+    container.innerHTML = '';
+    tabsContainer.innerHTML = '';
+
+    // Summary bar
+    const seasonIcons = { summer: t("☀️ Été"), spring: t("🌸 Printemps"), fall: t("🍂 Automne"), winter: t("❄️ Hiver") };
+    const destIcons = { france: t("🇫🇷 France"), abroad: t("✈️ Étranger") };
+    const transIcons = { car: t("🚗 Voiture"), train: t("🚆 Train"), flight: t("✈️ Avion") };
+    const accomIcons = { camp: t("⛺ Camping"), hostel: t("🏨 Hôtel/Auberge"), family: t("👨‍👩‍👧 Famille/Location") };
+    const actIcons = { walking: t("🥾 Randonnée"), skiing: t("⛷️ Ski"), celebration: t("🎉 Fête"), swimming: t("🏊 Baignade") };
+
+    let tags = `
+        <span class="summary-tag">👥 ${cond.persons} ${cond.persons > 1 ? (currentLang === 'en' ? 'people' : 'personnes') : (currentLang === 'en' ? 'person' : 'personne')}</span>
+        <span class="summary-tag">📅 ${cond.days} ${cond.days > 1 ? (currentLang === 'en' ? 'days' : 'jours') : (currentLang === 'en' ? 'day' : 'jour')}</span>
+        <span class="summary-tag">${seasonIcons[cond.season]}</span>
+        <span class="summary-tag">${destIcons[cond.destination]}</span>
+        <span class="summary-tag">${transIcons[cond.transport]}</span>
+        <span class="summary-tag">${accomIcons[cond.accommodation]}</span>
+    `;
+    cond.activities.forEach(a => {
+        tags += `<span class="summary-tag">${actIcons[a] || a}</span>`;
+    });
+    // Show participant names
+    cond.participants.forEach(p => {
+        tags += `<span class="summary-tag">${getAgeGroupEmoji(p.ageGroup)} ${escapeHtml(p.name)} (${p.age} ${t('ans')})</span>`;
+    });
+    document.getElementById('summaryBar').innerHTML = tags;
+
+    // ── Build tabs ──
+    // "Shared" tab + one tab per person
+    const sharedTab = document.createElement('div');
+    sharedTab.className = 'person-tab active';
+    sharedTab.textContent = '📦 ' + t('Objets communs');
+    sharedTab.dataset.target = 'section_shared';
+    sharedTab.onclick = function() { switchTab(this); };
+    tabsContainer.appendChild(sharedTab);
+
+    cond.participants.forEach((p, i) => {
+        const tab = document.createElement('div');
+        tab.className = 'person-tab';
+        tab.innerHTML = `${getAgeGroupEmoji(p.ageGroup)} ${escapeHtml(p.name)} <span class="tab-age">(${p.age} ${t('ans')})</span>`;
+        tab.dataset.target = 'section_person_' + i;
+        tab.onclick = function() { switchTab(this); };
+        tabsContainer.appendChild(tab);
+    });
+
+    // ── Build SHARED section ──
+    const sharedSection = document.createElement('div');
+    sharedSection.className = 'person-list-section active';
+    sharedSection.id = 'section_shared';
+
+    const sharedHeader = document.createElement('div');
+    sharedHeader.className = 'person-section-header';
+    sharedHeader.innerHTML = '📦 ' + t('Objets communs') + ' <span class="age-badge">' + t('Pour tout le groupe') + '</span>';
+    sharedSection.appendChild(sharedHeader);
+
+    for (const [catKey, cat] of Object.entries(ITEMS)) {
+        const sharedItems = cat.items
+            .filter(item => item.scope === "shared" && itemMatchesTrip(item, cond))
+            .filter(item => !isItemRemoved(item.name))
+            .map(item => ({
+                name: t(item.name),
+                origName: item.name,
+                qty: getCustomQty(item.name) ?? (item.qtyFn ? item.qtyFn(null, cond) : (item.qty || 1)),
+                weight: item.weight || 0
+            }));
+
+        const catEl = buildCategoryHtml(catKey, cat, sharedItems, 'shared');
+        if (catEl) sharedSection.appendChild(catEl);
+    }
+
+    container.appendChild(sharedSection);
+
+    // ── Build PER-PERSON sections ──
+    cond.participants.forEach((person, pIdx) => {
+        const section = document.createElement('div');
+        section.className = 'person-list-section';
+        section.id = 'section_person_' + pIdx;
+
+        const pHeader = document.createElement('div');
+        pHeader.className = 'person-section-header';
+        pHeader.innerHTML = `${getAgeGroupEmoji(person.ageGroup)} ${t('Affaires de')} ${escapeHtml(person.name)} <span class="age-badge">${getAgeGroupLabel(person.ageGroup)} \u2022 ${person.age} ${t('ans')}</span>`;
+        section.appendChild(pHeader);
+
+        for (const [catKey, cat] of Object.entries(ITEMS)) {
+            const personItems = cat.items
+                .filter(item => item.scope === "personal" && itemMatchesTrip(item, cond) && itemMatchesPerson(item, person))
+                .filter(item => !isItemRemoved(item.name))
+                .map(item => ({
+                    name: t(item.name),
+                    origName: item.name,
+                    qty: getCustomQty(item.name) ?? computeQty(item, person, cond),
+                    weight: item.weight || 0
+                }));
+
+            const catEl = buildCategoryHtml(catKey, cat, personItems, 'p' + pIdx);
+            if (catEl) section.appendChild(catEl);
+        }
+
+        container.appendChild(section);
+    });
+
+    updateProgress();
+    computeWeight(cond);
+    restoreCheckedState();
+
+    // Show result, hide form
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('stepInd1').classList.remove('active');
+    document.getElementById('stepInd2').classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+//  TAB SWITCHING
+// ─────────────────────────────────────────────
+
+function switchTab(tabEl) {
+    // Deactivate all tabs and sections
+    document.querySelectorAll('.person-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.person-list-section').forEach(s => s.classList.remove('active'));
+
+    // Activate clicked tab and target section
+    tabEl.classList.add('active');
+    const target = document.getElementById(tabEl.dataset.target);
+    if (target) target.classList.add('active');
+
+    updateProgress();
+}
+
+// ─────────────────────────────────────────────
+//  UI UTILITIES
+// ─────────────────────────────────────────────
+
+function toggleItem(checkbox) {
+    const nameSpan = document.getElementById(checkbox.id + '_name');
+    if (checkbox.checked) {
+        nameSpan.classList.add('checked');
+    } else {
+        nameSpan.classList.remove('checked');
+    }
+    updateProgress();
+    saveCheckedState();
+}
+
+let customItemCounter = 0;
+
+function addCustomItem(inputId, qtyId, btnEl) {
+    const input = document.getElementById(inputId);
+    const qtyInput = document.getElementById(qtyId);
+    const name = input.value.trim();
+    const qty = Math.max(1, parseInt(qtyInput.value) || 1);
+
+    if (!name) {
+        input.focus();
+        return;
+    }
+
+    // Find the item-list (ul) in the same category
+    const catDiv = btnEl.closest('.category');
+    const ul = catDiv.querySelector('.item-list');
+
+    customItemCounter++;
+    const itemId = `custom_item_${customItemCounter}`;
+
+    const li = document.createElement('li');
+    li.className = 'item-row';
+    li.dataset.weight = 0;
+    li.draggable = true;
+    li.innerHTML = `
+        <span class="drag-handle" title="Drag">⠿</span>
+        <input type="checkbox" id="${itemId}" onchange="toggleItem(this)">
+        <span class="item-name" id="${itemId}_name">${escapeHtml(name)}</span>
+        <span class="item-weight">0 g</span>
+        <span class="qty-group">
+            <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
+            <span class="item-qty" data-qty="${qty}">${qty}</span>
+            <button class="qty-btn" onclick="changeQty(this,1)">+</button>
+        </span>
+        <button class="btn-remove-item" onclick="removeListItem(this)" title="${t('Supprimer')}">×</button>
+    `;
+    // Drag events
+    li.addEventListener('dragstart', handleDragStart);
+    li.addEventListener('dragover', handleDragOver);
+    li.addEventListener('dragenter', handleDragEnter);
+    li.addEventListener('dragleave', handleDragLeave);
+    li.addEventListener('drop', handleDrop);
+    li.addEventListener('dragend', handleDragEnd);
+    ul.appendChild(li);
+
+    // Update badge count
+    const badge = catDiv.querySelector('.category-header .badge');
+    if (badge) {
+        const count = ul.querySelectorAll('.item-row').length;
+        badge.textContent = count + ' items';
+    }
+
+    // Clear input
+    input.value = '';
+    qtyInput.value = '1';
+    input.focus();
+
+    updateProgress();
+}
+
+function updateProgress() {
+    const all = document.querySelectorAll('#listContainer input[type="checkbox"]');
+    const checked = document.querySelectorAll('#listContainer input[type="checkbox"]:checked');
+    const total = all.length;
+    const done = checked.length;
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+    document.getElementById('progressText').textContent = `${done} / ${total} ${t('objets préparés')} (${pct}%)`;
+    document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function resetChecks() {
+    document.querySelectorAll('#listContainer input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        const nameSpan = document.getElementById(cb.id + '_name');
+        if (nameSpan) nameSpan.classList.remove('checked');
+    });
+    updateProgress();
+    localStorage.removeItem(CHECKS_KEY);
+}
+
+function goBack() {
+    document.getElementById('formSection').style.display = '';
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('stepInd1').classList.add('active');
+    document.getElementById('stepInd2').classList.remove('active');
+}
+
+// ── Initialize participant fields on load ──
+document.addEventListener('DOMContentLoaded', function() {
+    // Language: show overlay if no language saved, otherwise apply directly
+    if (currentLang) {
+        document.getElementById('langOverlay').style.display = 'none';
+        applyLanguage();
+    }
+
+    buildParticipantFields();
+    refreshProfileList();
+    refreshTripList();
+    autoLoadLastProfile();
+
+    // Register Service Worker for offline / PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+});
+
+// ─────────────────────────────────────────────
+//  PROFILE MANAGEMENT (localStorage)
+// ─────────────────────────────────────────────
+
+const PROFILES_KEY = 'packinglist_profiles';
+const LAST_PROFILE_KEY = 'packinglist_last_profile';
+
+function getSavedProfiles() {
+    try {
+        return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {};
+    } catch(e) {
+        return {};
+    }
+}
+
+function saveSavedProfiles(profiles) {
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+}
+
+function refreshProfileList() {
+    const select = document.getElementById('profileSelect');
+    const profiles = getSavedProfiles();
+    const names = Object.keys(profiles).sort();
+
+    // Keep first default option, remove the rest
+    select.innerHTML = '<option value="">' + t('— Choisir un profil —') + '</option>';
+    names.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        const p = profiles[name];
+        const count = p.participants ? p.participants.length : 0;
+        opt.textContent = `${name} (${count} ${count > 1 ? (currentLang === 'en' ? 'people' : 'personnes') : (currentLang === 'en' ? 'person' : 'personne')})`;
+        select.appendChild(opt);
+    });
+}
+
+function onProfileSelect() {
+    const select = document.getElementById('profileSelect');
+    const input = document.getElementById('profileNameInput');
+    if (select.value) {
+        input.value = select.value;
+    }
+}
+
+function saveCurrentProfile() {
+    const input = document.getElementById('profileNameInput');
+    const name = input.value.trim();
+    if (!name) {
+        showToast(t('Veuillez entrer un nom de profil'), 'error');
+        input.focus();
+        return;
+    }
+
+    const participants = [];
+    const n = Math.max(1, Math.min(20, parseInt(document.getElementById('nbPersons').value) || 1));
+    for (let i = 0; i < n; i++) {
+        const nameEl = document.getElementById('pName_' + i);
+        const ageEl = document.getElementById('pAge_' + i);
+        participants.push({
+            name: nameEl ? nameEl.value : '',
+            age: parseInt(ageEl ? ageEl.value : '30') || 30
+        });
+    }
+
+    const profiles = getSavedProfiles();
+    profiles[name] = { participants };
+    saveSavedProfiles(profiles);
+    localStorage.setItem(LAST_PROFILE_KEY, name);
+
+    refreshProfileList();
+    document.getElementById('profileSelect').value = name;
+    showToast(currentLang === 'en' ? `Profile "${name}" saved ✓` : `Profil « ${name} » sauvegardé ✓`, 'success');
+}
+
+function loadSelectedProfile() {
+    const select = document.getElementById('profileSelect');
+    const name = select.value;
+    if (!name) {
+        showToast(t('Sélectionnez un profil à charger'), 'info');
+        return;
+    }
+    loadProfile(name);
+}
+
+function loadProfile(name) {
+    const profiles = getSavedProfiles();
+    const profile = profiles[name];
+    if (!profile || !profile.participants) return;
+
+    const parts = profile.participants;
+
+    // Set number of persons
+    document.getElementById('nbPersons').value = parts.length;
+
+    // Build fields first
+    lastParticipantCount = 0; // Reset so fields are rebuilt fresh
+    buildParticipantFields();
+
+    // Fill in values
+    parts.forEach((p, i) => {
+        const nameEl = document.getElementById('pName_' + i);
+        const ageEl = document.getElementById('pAge_' + i);
+        if (nameEl) nameEl.value = p.name || '';
+        if (ageEl) ageEl.value = p.age || 30;
+        updateAgeHint(i);
+    });
+
+    document.getElementById('profileNameInput').value = name;
+    document.getElementById('profileSelect').value = name;
+    localStorage.setItem(LAST_PROFILE_KEY, name);
+    showToast(currentLang === 'en' ? `Profile "${name}" loaded ✓` : `Profil « ${name} » chargé ✓`, 'success');
+}
+
+function deleteSelectedProfile() {
+    const select = document.getElementById('profileSelect');
+    const name = select.value;
+    if (!name) {
+        showToast(t('Sélectionnez un profil à supprimer'), 'info');
+        return;
+    }
+    if (!confirm(currentLang === 'en' ? `Delete profile "${name}"?` : `Supprimer le profil « ${name} » ?`)) return;
+
+    const profiles = getSavedProfiles();
+    delete profiles[name];
+    saveSavedProfiles(profiles);
+
+    if (localStorage.getItem(LAST_PROFILE_KEY) === name) {
+        localStorage.removeItem(LAST_PROFILE_KEY);
+    }
+
+    refreshProfileList();
+    document.getElementById('profileNameInput').value = '';
+    showToast(currentLang === 'en' ? `Profile "${name}" deleted` : `Profil « ${name} » supprimé`, 'error');
+}
+
+function autoLoadLastProfile() {
+    const lastProfile = localStorage.getItem(LAST_PROFILE_KEY);
+    if (lastProfile) {
+        const profiles = getSavedProfiles();
+        if (profiles[lastProfile]) {
+            loadProfile(lastProfile);
+        }
+    }
+}
+
+// ── Toast notification ──
+function showToast(message, type) {
+    let toast = document.getElementById('profileToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'profileToast';
+        toast.className = 'profile-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.className = 'profile-toast ' + (type || 'info');
+
+    // Trigger show
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500);
+}
+
+// ─────────────────────────────────────────────
+//  LIST CONFIG (removed items + custom qty) localStorage
+// ─────────────────────────────────────────────
+
+const LIST_CONFIG_KEY = 'packinglist_listconfig';
+
+function getListConfig() {
+    try {
+        return JSON.parse(localStorage.getItem(LIST_CONFIG_KEY)) || { removed: [], qtyOverrides: {} };
+    } catch(e) {
+        return { removed: [], qtyOverrides: {} };
+    }
+}
+
+function isItemRemoved(origName) {
+    const config = getListConfig();
+    return config.removed.includes(origName);
+}
+
+function getCustomQty(origName) {
+    const config = getListConfig();
+    const v = config.qtyOverrides[origName];
+    return v !== undefined ? v : null;
+}
+
+function removeListItem(btnEl) {
+    const li = btnEl.closest('.item-row');
+    const catDiv = li.closest('.category');
+    const ul = li.closest('.item-list');
+    li.remove();
+
+    // Update badge count
+    const badge = catDiv.querySelector('.category-header .badge');
+    if (badge) {
+        const count = ul.querySelectorAll('.item-row').length;
+        badge.textContent = count + ' items';
+    }
+
+    // Remove empty category
+    if (ul.querySelectorAll('.item-row').length === 0) {
+        catDiv.style.display = 'none';
+    }
+
+    updateProgress();
+    recalcWeightFromDOM();
+}
+
+function changeQty(btnEl, delta) {
+    const group = btnEl.closest('.qty-group');
+    const qtySpan = group.querySelector('.item-qty');
+    let qty = parseInt(qtySpan.dataset.qty) || 1;
+    qty = Math.max(1, Math.min(99, qty + delta));
+    qtySpan.dataset.qty = qty;
+    qtySpan.textContent = qty;
+
+    const li = btnEl.closest('.item-row');
+    const weightPerUnit = parseInt(li.dataset.weight) || 0;
+    const totalW = weightPerUnit * qty;
+    const weightSpan = li.querySelector('.item-weight');
+    if (weightSpan) {
+        weightSpan.textContent = totalW >= 1000 ? (totalW / 1000).toFixed(1) + ' kg' : totalW + ' g';
+    }
+
+    recalcWeightFromDOM();
+}
+
+function recalcWeightFromDOM() {
+    let totalGrams = 0;
+    document.querySelectorAll('#listContainer .item-row').forEach(row => {
+        const w = parseInt(row.dataset.weight) || 0;
+        const qtySpan = row.querySelector('.item-qty');
+        const qty = qtySpan ? (parseInt(qtySpan.dataset.qty) || 1) : 1;
+        totalGrams += w * qty;
+    });
+
+    const bar = document.getElementById('weightBar');
+    if (totalGrams === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = '';
+
+    const kg = (totalGrams / 1000).toFixed(1);
+    const cond = window._lastCond || {};
+    let html = `<span class="weight-total">⚖️ ${t('Poids total estimé')} : ~${kg} kg</span>`;
+    if (cond.transport === 'flight') {
+        html += `<span class="weight-detail">(${t('Limite cabine')} : 10 kg)</span>`;
+        if (totalGrams > 10000) {
+            html += `<span class="weight-warning">${t('⚠️ Dépasse la limite cabine avion (10 kg)')}</span>`;
+        }
+    }
+    bar.innerHTML = html;
+}
+
+function saveListConfig() {
+    const config = { removed: [], qtyOverrides: {} };
+
+    // Collect current items from DOM to know what's still there
+    const presentItems = new Set();
+    document.querySelectorAll('#listContainer .item-row').forEach(row => {
+        const origName = row.dataset.origName;
+        if (origName) {
+            presentItems.add(origName);
+            const qtySpan = row.querySelector('.item-qty');
+            if (qtySpan) {
+                const qty = parseInt(qtySpan.dataset.qty) || 1;
+                config.qtyOverrides[origName] = qty;
+            }
+        }
+    });
+
+    // Find removed items: compare against all ITEMS that would match current conditions
+    const cond = window._lastCond || getConditions();
+    for (const [catKey, cat] of Object.entries(ITEMS)) {
+        cat.items.forEach(item => {
+            if (!itemMatchesTrip(item, cond)) return;
+            if (item.scope === "shared") {
+                if (!presentItems.has(item.name)) {
+                    config.removed.push(item.name);
+                }
+            } else {
+                // For personal items, if removed for ANY person it counts
+                cond.participants.forEach(person => {
+                    if (itemMatchesPerson(item, person) && !presentItems.has(item.name)) {
+                        if (!config.removed.includes(item.name)) {
+                            config.removed.push(item.name);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    localStorage.setItem(LIST_CONFIG_KEY, JSON.stringify(config));
+    showToast(t('Configuration sauvegardée ✓'), 'success');
+}
+
+function resetListConfig() {
+    localStorage.removeItem(LIST_CONFIG_KEY);
+    showToast(t('Configuration réinitialisée'), 'info');
+    // Regenerate the list to reflect the reset
+    generateList();
+}
+
+// ─────────────────────────────────────────────
+//  CHECKLIST PERSISTENCE (localStorage)
+// ─────────────────────────────────────────────
+
+const CHECKS_KEY = 'packinglist_checks';
+
+function saveCheckedState() {
+    const checked = [];
+    document.querySelectorAll('#listContainer input[type="checkbox"]:checked').forEach(cb => {
+        checked.push(cb.id);
+    });
+    localStorage.setItem(CHECKS_KEY, JSON.stringify(checked));
+}
+
+function restoreCheckedState() {
+    try {
+        const checked = JSON.parse(localStorage.getItem(CHECKS_KEY)) || [];
+        checked.forEach(id => {
+            const cb = document.getElementById(id);
+            if (cb) {
+                cb.checked = true;
+                const nameSpan = document.getElementById(id + '_name');
+                if (nameSpan) nameSpan.classList.add('checked');
+            }
+        });
+        updateProgress();
+    } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+//  WEIGHT ESTIMATOR
+// ─────────────────────────────────────────────
+
+function computeWeight(cond) {
+    let totalGrams = 0;
+    document.querySelectorAll('#listContainer .item-row').forEach(row => {
+        const w = parseInt(row.dataset.weight) || 0;
+        const qtySpan = row.querySelector('.item-qty');
+        const qty = qtySpan ? parseInt(qtySpan.textContent.replace('×', '')) || 1 : 1;
+        totalGrams += w * qty;
+    });
+
+    const bar = document.getElementById('weightBar');
+    if (totalGrams === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = '';
+
+    const kg = (totalGrams / 1000).toFixed(1);
+    let html = `<span class="weight-total">⚖️ ${t('Poids total estimé')} : ~${kg} kg</span>`;
+
+    if (cond.transport === 'flight') {
+        html += `<span class="weight-detail">(${t('Limite cabine')} : 10 kg)</span>`;
+        if (totalGrams > 10000) {
+            html += `<span class="weight-warning">${t('⚠️ Dépasse la limite cabine avion (10 kg)')}</span>`;
+        }
+    }
+
+    bar.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────
+//  DRAG & DROP REORDER
+// ─────────────────────────────────────────────
+
+let dragSrcEl = null;
+
+function handleDragStart(e) {
+    dragSrcEl = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', '');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+    if (this !== dragSrcEl && this.classList.contains('item-row')) {
+        this.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('drag-over');
+    if (dragSrcEl !== this && this.closest('.item-list') === dragSrcEl.closest('.item-list')) {
+        const list = this.closest('.item-list');
+        const items = [...list.querySelectorAll('.item-row')];
+        const fromIdx = items.indexOf(dragSrcEl);
+        const toIdx = items.indexOf(this);
+        if (fromIdx < toIdx) {
+            list.insertBefore(dragSrcEl, this.nextSibling);
+        } else {
+            list.insertBefore(dragSrcEl, this);
+        }
+    }
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.item-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+// ─────────────────────────────────────────────
+//  EXPORT LIST (Copy to clipboard)
+// ─────────────────────────────────────────────
+
+function exportList() {
+    let text = '';
+    const sections = document.querySelectorAll('.person-list-section');
+
+    sections.forEach(section => {
+        const header = section.querySelector('.person-section-header');
+        if (header) {
+            text += '\n━━━ ' + header.textContent.trim() + ' ━━━\n\n';
+        }
+
+        const categories = section.querySelectorAll('.category');
+        categories.forEach(cat => {
+            const catHeader = cat.querySelector('.category-header');
+            if (catHeader) {
+                const label = catHeader.childNodes[1] ? catHeader.childNodes[1].textContent.trim() : '';
+                text += '  ' + label + '\n';
+            }
+
+            const items = cat.querySelectorAll('.item-row');
+            items.forEach(item => {
+                const cb = item.querySelector('input[type="checkbox"]');
+                const nameSpan = item.querySelector('.item-name');
+                const qtySpan = item.querySelector('.item-qty');
+                const mark = cb && cb.checked ? '✅' : '⬜';
+                const name = nameSpan ? nameSpan.textContent : '';
+                const qty = qtySpan ? qtySpan.textContent : '';
+                text += `    ${mark} ${name} ${qty}\n`;
+            });
+            text += '\n';
+        });
+    });
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            showToast(t('Liste copiée ✓'), 'success');
+        }).catch(() => {
+            fallbackCopy(text.trim());
+        });
+    } else {
+        fallbackCopy(text.trim());
+    }
+}
+
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        showToast(t('Liste copiée ✓'), 'success');
+    } catch(e) {
+        showToast('Copy failed', 'error');
+    }
+    document.body.removeChild(ta);
+}
+
+// ─────────────────────────────────────────────
+//  TRIP MANAGEMENT (full trip save - localStorage)
+// ─────────────────────────────────────────────
+
+const TRIPS_KEY = 'packinglist_trips';
+
+function getSavedTrips() {
+    try {
+        return JSON.parse(localStorage.getItem(TRIPS_KEY)) || {};
+    } catch(e) {
+        return {};
+    }
+}
+
+function saveSavedTrips(trips) {
+    localStorage.setItem(TRIPS_KEY, JSON.stringify(trips));
+}
+
+function refreshTripList() {
+    const select = document.getElementById('tripSelect');
+    const trips = getSavedTrips();
+    const names = Object.keys(trips).sort();
+
+    select.innerHTML = '<option value="">' + t('— Choisir un voyage —') + '</option>';
+    names.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+    });
+}
+
+function onTripSelect() {
+    const select = document.getElementById('tripSelect');
+    const input = document.getElementById('tripNameInput');
+    if (select.value) {
+        input.value = select.value;
+    }
+}
+
+function saveCurrentTrip() {
+    const input = document.getElementById('tripNameInput');
+    const name = input.value.trim();
+    if (!name) {
+        showToast(t('Veuillez entrer un nom de voyage'), 'error');
+        input.focus();
+        return;
+    }
+
+    const activities = [];
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').forEach(cb => {
+        activities.push(cb.value);
+    });
+
+    const participants = [];
+    const n = Math.max(1, Math.min(20, parseInt(document.getElementById('nbPersons').value) || 1));
+    for (let i = 0; i < n; i++) {
+        const nameEl = document.getElementById('pName_' + i);
+        const ageEl = document.getElementById('pAge_' + i);
+        participants.push({
+            name: nameEl ? nameEl.value : '',
+            age: parseInt(ageEl ? ageEl.value : '30') || 30
+        });
+    }
+
+    const trip = {
+        nbPersons: n,
+        season: document.getElementById('season').value,
+        destination: document.getElementById('destination').value,
+        transport: document.getElementById('transport').value,
+        accommodation: document.getElementById('accommodation').value,
+        nbDays: parseInt(document.getElementById('nbDays').value) || 7,
+        activities,
+        participants
+    };
+
+    const trips = getSavedTrips();
+    trips[name] = trip;
+    saveSavedTrips(trips);
+
+    refreshTripList();
+    document.getElementById('tripSelect').value = name;
+    showToast(currentLang === 'en' ? `Trip "${name}" saved ✓` : `Voyage « ${name} » sauvegardé ✓`, 'success');
+}
+
+function loadSelectedTrip() {
+    const select = document.getElementById('tripSelect');
+    const name = select.value;
+    if (!name) {
+        showToast(t('Sélectionnez un voyage à charger'), 'info');
+        return;
+    }
+
+    const trips = getSavedTrips();
+    const trip = trips[name];
+    if (!trip) return;
+
+    // Restore form values
+    document.getElementById('nbPersons').value = trip.nbPersons || 2;
+    document.getElementById('season').value = trip.season || 'summer';
+    document.getElementById('destination').value = trip.destination || 'france';
+    document.getElementById('transport').value = trip.transport || 'car';
+    document.getElementById('accommodation').value = trip.accommodation || 'family';
+    document.getElementById('nbDays').value = trip.nbDays || 7;
+
+    // Activities
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(cb => {
+        cb.checked = (trip.activities || []).includes(cb.value);
+    });
+
+    // Participants
+    lastParticipantCount = 0;
+    buildParticipantFields();
+
+    if (trip.participants) {
+        trip.participants.forEach((p, i) => {
+            const nameEl = document.getElementById('pName_' + i);
+            const ageEl = document.getElementById('pAge_' + i);
+            if (nameEl) nameEl.value = p.name || '';
+            if (ageEl) ageEl.value = p.age || 30;
+            updateAgeHint(i);
+        });
+    }
+
+    document.getElementById('tripNameInput').value = name;
+    document.getElementById('tripSelect').value = name;
+    showToast(currentLang === 'en' ? `Trip "${name}" loaded ✓` : `Voyage « ${name} » chargé ✓`, 'success');
+}
+
+function deleteSelectedTrip() {
+    const select = document.getElementById('tripSelect');
+    const name = select.value;
+    if (!name) {
+        showToast(t('Sélectionnez un voyage à supprimer'), 'info');
+        return;
+    }
+    if (!confirm(currentLang === 'en' ? `Delete trip "${name}"?` : `Supprimer le voyage « ${name} » ?`)) return;
+
+    const trips = getSavedTrips();
+    delete trips[name];
+    saveSavedTrips(trips);
+
+    refreshTripList();
+    document.getElementById('tripNameInput').value = '';
+    showToast(currentLang === 'en' ? `Trip "${name}" deleted` : `Voyage « ${name} » supprimé`, 'error');
+}
+</script>
+
+</body>
+</html>
